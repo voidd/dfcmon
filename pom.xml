@@ -6,12 +6,12 @@
 
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>ru.ibs.sad</groupId>
+    <groupId>ru.guardz.docmon</groupId>
     <artifactId>docmon</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
     <name>docmon</name>
-    <description>dataConverter module</description>
+    <description>Documentum DFC monitoring</description>
 
     <repositories>
         <repository>

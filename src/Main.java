@@ -47,11 +47,11 @@ public class Main {
     private static IDfSessionManager connect2Dctm(String[] args) throws DfException {
         IDfClientX clientx = new DfClientX();
         IDfClient client = clientx.getLocalClient();
-        IDfLoginInfo oLogin = clientx.getLoginInfo();
-        oLogin.setUser(args[0]);
-        oLogin.setPassword(args[1]);
+        IDfLoginInfo iLogin = clientx.getLoginInfo();
+        iLogin.setUser(args[0]);
+        iLogin.setPassword(args[1]);
         IDfSessionManager dfSessionManager = client.newSessionManager();
-        dfSessionManager.setIdentity(args[2], oLogin);
+        dfSessionManager.setIdentity(args[2], iLogin);
         return dfSessionManager;
     }
 }
