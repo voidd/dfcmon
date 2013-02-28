@@ -1,0 +1,48 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+repositories {
+    mavenCentral()
+    maven {
+        credentials {
+            username "developer"
+            password "\\{DESede\\}gI69VzNhwdhH1spMqMvyUA=="
+        }
+        url "http://217.74.43.69:8081/artifactory/repo"
+    }
+}
+
+dependencies {
+    compile group: 'com.emc.documentum', name: 'dfc', version: '6.7-P05'
+    runtime group: 'com.emc.documentum', name: 'dfc', version: '6.7-P05'
+    runtime group: 'org.aspectj', name: 'aspectjrt', version: '1.6.12'
+    runtime group: 'org.apache.commons', name: 'commons-lang', version: '2.4'
+    runtime group: 'org.apache.log4j', name: 'log4j', version: '1.2.8'
+    runtime group: 'com.rsa', name: 'certjFIPS', version: '2.2.0.0'
+    runtime group: 'com.rsa', name: 'jsafeFIPS', version: '3.6'
+
+}
+
+sourceCompatibility = 1.5
+version = '1.0'
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Documentum Monitoring', 'Implementation-Version': version
+    }
+}
+
+/*task libs(type: Sync) {
+    from configurations.runtime
+    into "build/libs"
+}*/
+
+task (make, type: Sync) {
+    into "build/libs"
+    from configurations.runtime
+}
+
+task copyDfc(type: Copy) {
+    from 'src/main/dfc.properties'
+    into 'build/'
+}
+
