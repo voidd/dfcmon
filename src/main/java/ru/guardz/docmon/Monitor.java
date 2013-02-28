@@ -16,20 +16,15 @@ public class Monitor {
         IDfSession dfSession = null;
         try {
             dfSession = dfSessionManager.newSession(docbaseName);
-//            DfLogger.info(UpdateDpkFromFile.class, "Successfully connect to the repository ".concat(docbaseName), null, null);
             System.out.println("Successfully connect to the repository ".concat(docbaseName));
 
-/*            CustomProxyFactoriesLocator.registerAll();
-
-            updateDpk(args, dfSession);*/
-            System.out.println("JMS Config".concat(getJMSConfig(dfSession)));
+            System.out.println("JMS Config ".concat(getJMSConfig(dfSession)));
 
 
             System.out.println("JMS Config Successfully complete");
         } catch (Throwable t) {
             DfLogger.fatal(dfSessionManager, t.getMessage(), null, t);
         }
-        // write your code here
     }
 
     private static String getJMSConfig(IDfSession dfSession) throws DfException {
