@@ -14,12 +14,14 @@ repositories {
 
 dependencies {
     compile group: 'com.emc.documentum', name: 'dfc', version: '6.7-P05'
+    compile group: 'com.google.guava', name: 'guava', version: '12.0'
     runtime group: 'com.emc.documentum', name: 'dfc', version: '6.7-P05'
     runtime group: 'org.aspectj', name: 'aspectjrt', version: '1.6.12'
     runtime group: 'org.apache.commons', name: 'commons-lang', version: '2.4'
     runtime group: 'org.apache.log4j', name: 'log4j', version: '1.2.8'
     runtime group: 'com.rsa', name: 'certjFIPS', version: '2.2.0.0'
     runtime group: 'com.rsa', name: 'jsafeFIPS', version: '3.6'
+    runtime group: 'com.google.guava', name: 'guava', version: '12.0'
 
 }
 
@@ -31,17 +33,12 @@ jar {
     }
 }
 
-/*task libs(type: Sync) {
-    from configurations.runtime
-    into "build/libs"
-}*/
-
-task (make, type: Sync) {
+task (make, dependsOn:build, type: Sync) {
     into "build/libs"
     from configurations.runtime
 }
 
-task copyDfc(type: Copy) {
+task copyDfc(dependsOn: make, type: Copy) {
     from 'src/main/dfc.properties'
     into 'build/'
 }
