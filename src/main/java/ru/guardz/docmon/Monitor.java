@@ -14,6 +14,8 @@ import java.util.List;
 
 public class Monitor {
 
+    private static String OS = System.getProperty("os.name").toLowerCase();
+
     public static void main(String[] args) throws DfException {
         String docbaseName = args[2];
         IDfSessionManager dfSessionManager = initialConnect(args);
@@ -35,7 +37,7 @@ public class Monitor {
 
         } catch (Throwable t) {
             DfLogger.fatal(dfSessionManager, t.getMessage(), null, t);
-        }   finally {
+        } finally {
             dfSession.disconnect();
         }
     }
@@ -62,30 +64,33 @@ public class Monitor {
     }
 
     private static Boolean fetchContent(IDfSession dfSession) throws DfException {
-        final String s = "select * from dm_document where folder('/System/Sysadmin/Reports')";
+        final String s = "select * from dm_document where folder('/System/Sysadmin/Reports') enable (RETURN_TOP 1)";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
-        int count = 0;
-        Boolean ret = null;
+        Boolean ret;
+        String filename = null;
+        if (isWindows()) {
+            filename = "C:\\TEMP\\file.txt";
+        } else if (isSolaris()) {
+            filename = "/tmp/file.txt";
+        } else if (isUnix()) {
+            filename = "/tmp/file.txt";
+        }
         IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
         try {
-            for (int i = 0; i < 1; i++) {
-                collection.next();
-                IDfId id = collection.getId("r_object_id");
-                IDfSysObject sysObject = (IDfSysObject) dfSession.getObject(id);
-
-                sysObject.getFile("C:\\Temp\\file.txt");
-            }
+            collection.next();
+            IDfId id = collection.getId("r_object_id");
+            IDfSysObject sysObject = (IDfSysObject) dfSession.getObject(id);
+            sysObject.getFile(filename);
         } catch (DfException e) {
             e.printStackTrace();
         } finally {
-            // ALWAYS! clean up your collections
             if (collection != null) {
                 collection.close();
             }
         }
 
-        File f = new File("C:\\Temp\\file.txt");
+        File f = new File(filename);
         ret = f.exists();
 
         return ret;
@@ -96,17 +101,14 @@ public class Monitor {
         IDfQuery query = new DfQuery();
         query.setDQL(s);
         String jmsName = null;
-        int count = 0;
         IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
         try {
             while (collection.next()) {
-                count++;
                 jmsName = collection.getString("object_name");
             }
         } catch (DfException e) {
             e.printStackTrace();
         } finally {
-            // ALWAYS! clean up your collections
             if (collection != null) {
                 collection.close();
             }
@@ -118,12 +120,10 @@ public class Monitor {
         final String s = "EXECUTE show_sessions";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
-        int count = 0;
         List<String> list = Lists.newArrayList();
         IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
         try {
             while (collection.next()) {
-                count++;
                 list.add(collection.getString("user_name"));
                 list.add(collection.getString("db_session_id"));
                 list.add(collection.getString("pid"));
@@ -132,7 +132,6 @@ public class Monitor {
         } catch (DfException e) {
             e.printStackTrace();
         } finally {
-            // ALWAYS! clean up your collections
             if (collection != null) {
                 collection.close();
             }
@@ -149,5 +148,17 @@ public class Monitor {
         IDfSessionManager dfSessionManager = client.newSessionManager();
         dfSessionManager.setIdentity(args[2], iLogin);
         return dfSessionManager;
+    }
+
+    public static boolean isWindows() {
+        return (OS.indexOf("win") >= 0);
+    }
+
+    public static boolean isUnix() {
+        return (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0 );
+    }
+
+    public static boolean isSolaris() {
+        return (OS.indexOf("sunos") >= 0);
     }
 }
