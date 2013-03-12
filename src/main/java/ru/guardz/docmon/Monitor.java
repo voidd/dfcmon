@@ -10,6 +10,7 @@ import com.documentum.fc.common.IDfLoginInfo;
 import com.google.common.collect.Lists;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class Monitor {
@@ -32,12 +33,15 @@ public class Monitor {
                 System.out.println(sessions.get(i));
             }*/
             System.out.println("Total open sessions in docbase: ".concat(getSessionCount(dfSession).toString()));
+            System.out.println("Total failed and halted workflows: ".concat(getDeadWorkflows(dfSession).toString()));
+            System.out.println("Total workitems not associated with servers: ".concat(getBadWorkitems(dfSession).toString()));
 
             if (fetchContent(dfSession)) System.out.println("Can fetch content!");
 
         } catch (Throwable t) {
             DfLogger.fatal(dfSessionManager, t.getMessage(), null, t);
         } finally {
+            assert dfSession != null;
             dfSession.disconnect();
         }
     }
@@ -55,7 +59,6 @@ public class Monitor {
         } catch (DfException e) {
             e.printStackTrace();
         } finally {
-            // ALWAYS! clean up your collections
             if (collection != null) {
                 collection.close();
             }
@@ -63,7 +66,47 @@ public class Monitor {
         return count;
     }
 
-    private static Boolean fetchContent(IDfSession dfSession) throws DfException {
+    private static Integer getDeadWorkflows(IDfSession dfSession) throws DfException {
+        final String s = "SELECT r_object_id FROM dm_workflow w WHERE any w.r_act_state in (3,4)";
+        IDfQuery query = new DfQuery();
+        query.setDQL(s);
+        int count = 0;
+        IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
+        try {
+            while (collection.next()) {
+                count++;
+            }
+        } catch (DfException e) {
+            e.printStackTrace();
+        } finally {
+            if (collection != null) {
+                collection.close();
+            }
+        }
+        return count;
+    }
+
+    private static Integer getBadWorkitems(IDfSession dfSession) throws DfException {
+        final String s = "select * from dmi_workitem w, dm_workflow wf where  w.r_workflow_id = wf.r_object_id and a_wq_name not in (select r_object_id from dm_server_config)";
+        IDfQuery query = new DfQuery();
+        query.setDQL(s);
+        int count = 0;
+        IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
+        try {
+            while (collection.next()) {
+                count++;
+            }
+        } catch (DfException e) {
+            e.printStackTrace();
+        } finally {
+            if (collection != null) {
+                collection.close();
+            }
+        }
+        return count;
+    }
+
+    private static Boolean fetchContent(IDfSession dfSession) throws DfException, IOException {
         final String s = "select * from dm_document where folder('/System/Sysadmin/Reports') enable (RETURN_TOP 1)";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
@@ -90,10 +133,14 @@ public class Monitor {
             }
         }
 
-        File f = new File(filename);
-        ret = f.exists();
+        ret = makeFile(filename);
 
         return ret;
+    }
+
+    private static Boolean makeFile(String filename) throws IOException {
+        File file = new File(filename);
+        return file.exists();
     }
 
     private static String getJMSConfig(IDfSession dfSession) throws DfException {
@@ -151,14 +198,14 @@ public class Monitor {
     }
 
     public static boolean isWindows() {
-        return (OS.indexOf("win") >= 0);
+        return (OS.contains("win"));
     }
 
     public static boolean isUnix() {
-        return (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0 );
+        return (OS.contains("nix") || OS.contains("nux") || OS.indexOf("aix") > 0 );
     }
 
     public static boolean isSolaris() {
-        return (OS.indexOf("sunos") >= 0);
+        return (OS.contains("sunos"));
     }
 }
