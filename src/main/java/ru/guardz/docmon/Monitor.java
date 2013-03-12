@@ -7,11 +7,9 @@ import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfLogger;
 import com.documentum.fc.common.IDfId;
 import com.documentum.fc.common.IDfLoginInfo;
-import com.google.common.collect.Lists;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 public class Monitor {
 
@@ -143,7 +141,7 @@ public class Monitor {
         return file.exists();
     }
 
-    private static String getJMSConfig(IDfSession dfSession) throws DfException {
+/*    private static String getJMSConfig(IDfSession dfSession) throws DfException {
         final String s = "SELECT * FROM DM_JMS_CONFIG";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
@@ -184,7 +182,7 @@ public class Monitor {
             }
         }
         return list;
-    }
+    }*/
 
     private static IDfSessionManager initialConnect(String[] args) throws DfException {
         IDfClientX clientx = new DfClientX();
