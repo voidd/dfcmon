@@ -1,4 +1,4 @@
-package main.java.ru.guardz.docmon;
+package ru.guardz.docmon;
 
 public class IndexAgentInfo {
     private String m_index_name;

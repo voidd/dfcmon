@@ -7,7 +7,7 @@ import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfLogger;
 import com.documentum.fc.common.IDfId;
 import com.documentum.fc.common.IDfLoginInfo;
-import main.java.ru.guardz.docmon.IndexAgentInfo;
+import ru.guardz.docmon.IndexAgentInfo;
 
 import java.io.File;
 import java.io.IOException;
