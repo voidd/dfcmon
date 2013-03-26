@@ -96,6 +96,26 @@ public class Monitor {
         return count;
     }
 
+    private static Integer getFTQueueSize(IDfSession dfSession) throws DfException {
+        final String s = "select count(*) from dmi_queue_item where name = 'dm_fulltext_index_user' and task_state not in ('failed','warning')";
+        IDfQuery query = new DfQuery();
+        query.setDQL(s);
+        int count = 0;
+        IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
+        try {
+            if (collection.next()) {
+                count++;
+            }
+        } catch (DfException e) {
+            e.printStackTrace();
+        } finally {
+            if (collection != null) {
+                collection.close();
+            }
+        }
+        return count;
+    }
+
     private static Boolean fetchContent(IDfSession dfSession) throws DfException, IOException {
         isConnected();
         final String s = "select * from dm_document where folder('/System/Sysadmin/Reports') enable (RETURN_TOP 1)";
@@ -179,6 +199,7 @@ public class Monitor {
             System.out.println("Total failed and halted workflows: ".concat(getDeadWorkflows(dfSession).toString()));
             System.out.println("Total workitems not associated with servers: ".concat(getBadWorkitems(dfSession).toString()));
             System.out.println("IndexAgent status: ".concat(statusOfIA(dfSession)));
+            System.out.println("Total number of queued items: ".concat(getFTQueueSize(dfSession).toString()));
 
             if (fetchContent(dfSession)) System.out.println("Can fetch content!");
 
@@ -190,7 +211,7 @@ public class Monitor {
         }
     }
 
-    public static String statusOfIA(IDfSession dfSession) throws DfException {
+    private static String statusOfIA(IDfSession dfSession) throws DfException {
         String ret = null;
         List list = getIndexName(dfSession);
         IndexAgentInfo agentInfo;
