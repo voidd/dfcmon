@@ -213,11 +213,11 @@ public class Monitor {
                 String indexAgentName = collection.getRepeatingString("name", ix);
                 String status = collection.getRepeatingString("status", ix);
                 if (Integer.parseInt(status) == 200) {
-                    ret = indexAgentName.concat("Not responding");
+                    ret = indexAgentName.concat("is in not responsible state");
                 } else if(Integer.parseInt(status) == 100) {
-                    ret = indexAgentName.concat("Shutdown");
+                    ret = indexAgentName.concat("is shutdown");
                 } else if(Integer.parseInt(status) == 0) {
-                    ret = indexAgentName.concat("Running");
+                    ret = indexAgentName.concat(" is running");
                 }
             }
         } catch (DfException exception) {
