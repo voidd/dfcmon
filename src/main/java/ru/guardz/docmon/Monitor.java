@@ -7,42 +7,17 @@ import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfLogger;
 import com.documentum.fc.common.IDfId;
 import com.documentum.fc.common.IDfLoginInfo;
+import main.java.ru.guardz.docmon.IndexAgentInfo;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Monitor {
 
     private static String OS = System.getProperty("os.name").toLowerCase();
-
-    public static void main(String[] args) throws DfException {
-        String docbaseName = args[2];
-        IDfSessionManager dfSessionManager = initialConnect(args);
-
-        IDfSession dfSession = null;
-        try {
-            dfSession = dfSessionManager.newSession(docbaseName);
-            System.out.println("Successfully connect to the repository ".concat(docbaseName));
-/*
-            System.out.println("JMS Config ".concat(getJMSConfig(dfSession)));
-            List<String> sessions = getActiveSessions(dfSession);
-            int size = sessions.size();
-            for (int i = 0; i < size; i++) {
-                System.out.println(sessions.get(i));
-            }*/
-            System.out.println("Total open sessions in docbase: ".concat(getSessionCount(dfSession).toString()));
-            System.out.println("Total failed and halted workflows: ".concat(getDeadWorkflows(dfSession).toString()));
-            System.out.println("Total workitems not associated with servers: ".concat(getBadWorkitems(dfSession).toString()));
-
-            if (fetchContent(dfSession)) System.out.println("Can fetch content!");
-
-        } catch (Throwable t) {
-            DfLogger.fatal(dfSessionManager, t.getMessage(), null, t);
-        } finally {
-            assert dfSession != null;
-            dfSession.disconnect();
-        }
-    }
+    private static IDfSession dfSession;
 
     private static Integer getSessionCount(IDfSession dfSession) throws DfException {
         final String s = "EXECUTE show_sessions";
@@ -62,6 +37,23 @@ public class Monitor {
             }
         }
         return count;
+    }
+
+    private static List getIndexName(IDfSession dfSession) throws DfException {
+        List result = new ArrayList<String>();
+        IDfCollection col;
+        IDfQuery q = new DfQuery();
+        q.setDQL("select fti.index_name,iac.object_name as instance_name from dm_f" +
+                "ulltext_index fti, dm_ftindex_agent_config iac where fti.index_n" +
+                "ame =  iac.index_name and fti.is_standby = false and iac.force_i" +
+                "nactive = false"
+        );
+        col = q.execute(dfSession, 0);
+        while (col.next()) {
+            result.add(new IndexAgentInfo(col.getString("index_name").trim(),col.getString("instance_name").trim()));
+        }
+        col.close();
+        return result;
     }
 
     private static Integer getDeadWorkflows(IDfSession dfSession) throws DfException {
@@ -105,6 +97,7 @@ public class Monitor {
     }
 
     private static Boolean fetchContent(IDfSession dfSession) throws DfException, IOException {
+        isConnected();
         final String s = "select * from dm_document where folder('/System/Sysadmin/Reports') enable (RETURN_TOP 1)";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
@@ -141,50 +134,7 @@ public class Monitor {
         return file.exists();
     }
 
-/*    private static String getJMSConfig(IDfSession dfSession) throws DfException {
-        final String s = "SELECT * FROM DM_JMS_CONFIG";
-        IDfQuery query = new DfQuery();
-        query.setDQL(s);
-        String jmsName = null;
-        IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
-        try {
-            while (collection.next()) {
-                jmsName = collection.getString("object_name");
-            }
-        } catch (DfException e) {
-            e.printStackTrace();
-        } finally {
-            if (collection != null) {
-                collection.close();
-            }
-        }
-        return jmsName;
-    }
-
-    private static List<String> getActiveSessions(IDfSession dfSession) throws DfException {
-        final String s = "EXECUTE show_sessions";
-        IDfQuery query = new DfQuery();
-        query.setDQL(s);
-        List<String> list = Lists.newArrayList();
-        IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
-        try {
-            while (collection.next()) {
-                list.add(collection.getString("user_name"));
-                list.add(collection.getString("db_session_id"));
-                list.add(collection.getString("pid"));
-                list.add(collection.getString("client_host"));
-            }
-        } catch (DfException e) {
-            e.printStackTrace();
-        } finally {
-            if (collection != null) {
-                collection.close();
-            }
-        }
-        return list;
-    }*/
-
-    private static IDfSessionManager initialConnect(String[] args) throws DfException {
+    private static IDfSessionManager initConnect(String[] args) throws DfException {
         IDfClientX clientx = new DfClientX();
         IDfClient client = clientx.getLocalClient();
         IDfLoginInfo iLogin = clientx.getLoginInfo();
@@ -195,15 +145,89 @@ public class Monitor {
         return dfSessionManager;
     }
 
-    public static boolean isWindows() {
+    private static boolean isWindows() {
         return (OS.contains("win"));
     }
 
-    public static boolean isUnix() {
-        return (OS.contains("nix") || OS.contains("nux") || OS.indexOf("aix") > 0 );
+    private static boolean isUnix() {
+        return (OS.contains("nix") || OS.contains("nux") || OS.indexOf("aix") > 0);
     }
 
-    public static boolean isSolaris() {
+    private static boolean isSolaris() {
         return (OS.contains("sunos"));
+    }
+
+    private static boolean isConnected() {
+        return dfSession != null;
+    }
+
+    public static void main(String[] args) throws DfException {
+        String docbaseName = args[2];
+        IDfSessionManager dfSessionManager = initConnect(args);
+
+        try {
+            dfSession = dfSessionManager.newSession(docbaseName);
+            System.out.println("Successfully connect to the repository ".concat(docbaseName));
+/*
+            System.out.println("JMS Config ".concat(getJMSConfig(dfSession)));
+            List<String> sessions = getActiveSessions(dfSession);
+            int size = sessions.size();
+            for (int i = 0; i < size; i++) {
+                System.out.println(sessions.get(i));
+            }*/
+            System.out.println("Total open sessions in docbase: ".concat(getSessionCount(dfSession).toString()));
+            System.out.println("Total failed and halted workflows: ".concat(getDeadWorkflows(dfSession).toString()));
+            System.out.println("Total workitems not associated with servers: ".concat(getBadWorkitems(dfSession).toString()));
+            System.out.println("IndexAgent status: ".concat(statusOfIA(dfSession)));
+
+            if (fetchContent(dfSession)) System.out.println("Can fetch content!");
+
+        } catch (Throwable t) {
+            DfLogger.fatal(dfSessionManager, t.getMessage(), null, t);
+        } finally {
+            assert dfSession != null;
+            dfSession.disconnect();
+        }
+    }
+
+    public static String statusOfIA(IDfSession dfSession) throws DfException {
+        String ret = null;
+        List list = getIndexName(dfSession);
+        IndexAgentInfo agentInfo;
+        for (Object aList : list) {
+             agentInfo = (IndexAgentInfo) aList;
+
+        String instanceName = agentInfo != null ? agentInfo.get_instance_name() : null;
+        String indexName = agentInfo != null ? agentInfo.get_index_name() : null;
+        String query = "NULL,FTINDEX_AGENT_ADMIN,NAME,S," +
+                indexName + ",AGENT_INSTANCE_NAME,S," + instanceName + ",ACTION,S,status";
+        DfClientX clientX = new DfClientX();
+        IDfQuery q = clientX.getQuery();
+        q.setDQL(query);
+        IDfCollection collection = q.execute(dfSession, IDfQuery.DF_APPLY);
+        try {
+            dfSession.getMessage(1);
+            collection.next();
+            int count = collection.getValueCount("name");
+            for (int ix = 0; ix < count; ix++) {
+                String indexAgentName = collection.getRepeatingString("name", ix);
+                String status = collection.getRepeatingString("status", ix);
+                if (Integer.parseInt(status) == 200) {
+                    ret = indexAgentName.concat("Not responding");
+                } else if(Integer.parseInt(status) == 100) {
+                    ret = indexAgentName.concat("Shutdown");
+                } else if(Integer.parseInt(status) == 0) {
+                    ret = indexAgentName.concat("Running");
+                }
+            }
+        } catch (DfException exception) {
+            exception.printStackTrace();
+        } finally {
+            if (collection != null) {
+                collection.close();
+            }
+        }
+        }
+       return ret;
     }
 }
