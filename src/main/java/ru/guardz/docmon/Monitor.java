@@ -3,10 +3,7 @@ package ru.guardz.docmon;
 import com.documentum.com.DfClientX;
 import com.documentum.com.IDfClientX;
 import com.documentum.fc.client.*;
-import com.documentum.fc.common.DfException;
-import com.documentum.fc.common.DfLogger;
-import com.documentum.fc.common.IDfId;
-import com.documentum.fc.common.IDfLoginInfo;
+import com.documentum.fc.common.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,8 +34,6 @@ public class Monitor {
         }
         return count;
     }
-
-    ;
 
     private static List getIndexName(IDfSession dfSession) throws DfException {
         List result = new ArrayList<String>();
@@ -203,6 +198,12 @@ public class Monitor {
     }
 
     public static void main(String[] args) throws DfException {
+        if (args.length < 4) {
+            String message = "Wrong parameter's number. Must be at least 4 parameters: "
+                    + "<user_name> <password> <repository> <fullpath_filename>";
+            DfLogger.error(Monitor.class, message, null, null);
+            throw new DfCriticalException(message);
+        }
         String docbaseName = args[2];
         IDfSessionManager dfSessionManager = initConnect(args);
 
