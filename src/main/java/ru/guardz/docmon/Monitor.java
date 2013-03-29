@@ -113,14 +113,14 @@ public class Monitor {
     }
 
     private static Boolean checkFTSearch(IDfSession dfSession) throws DfException {
-        final String s = "select r_object_id from dm_sysobject SEARCH DOCUMENT CONTAINS 'test' enable(return_top 1)";
+        final String s = "select count(r_object_id) as cnt from dm_sysobject SEARCH DOCUMENT CONTAINS 'test' enable(return_top 1)";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
         int count = 0;
         IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
         try {
             if (collection.next()) {
-                count++;
+                count = collection.getInt("cnt");
             }
         } catch (DfException e) {
             e.printStackTrace();
@@ -198,7 +198,7 @@ public class Monitor {
     }
 
     public static void main(String[] args) throws DfException {
-        if (args.length < 4) {
+        if (args.length < 3) {
             String message = "Wrong parameter's number. Must be at least 4 parameters: "
                     + "<user_name> <password> <repository> <fullpath_filename>";
             DfLogger.error(Monitor.class, message, null, null);
