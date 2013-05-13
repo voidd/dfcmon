@@ -199,8 +199,8 @@ public class Monitor {
 
     public static void main(String[] args) throws DfException {
         if (args.length < 3) {
-            String message = "Wrong parameter's number. Must be at least 4 parameters: "
-                    + "<user_name> <password> <repository> <fullpath_filename>";
+            String message = "Wrong parameter's number. Must be at least 3 parameters: "
+                    + "<user_name> <password> <repository>";
             DfLogger.error(Monitor.class, message, null, null);
             throw new DfCriticalException(message);
         }
