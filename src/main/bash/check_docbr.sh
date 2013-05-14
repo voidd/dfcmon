@@ -77,5 +77,5 @@ if [ $? == 0 ] ; then
     fi
 fi
 
-$ECHO "Docbase $DOCBASE is not projected on server $HOSTNAME \n"
+$ECHO "Docbase $DOCBASE is not projected on server $HOSTNAME"
 exit $CRITICAL
