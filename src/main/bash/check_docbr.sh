@@ -16,13 +16,13 @@ DM_HOME="/u01/documentum/product/6.7"
 #dmqdocbroker
 DMQDOC="${DM_HOME}/bin/dmqdocbroker"
 
-PROGNAME=`/bin/basename $0`
+PROG=`/bin/basename $0`
 GREP=/bin/grep
 ECHO=/bin/echo
 
 
 print_usage() {
-    echo "Usage: $PROGNAME -t <docbroker_host> -p <docbroker_port> -d <docbase_name>"
+    echo "Usage: $PROG -t <docbroker_host> -p <docbroker_port> -d <docbase_name>"
 }
 
 if [ $# -lt 3 ]; then
