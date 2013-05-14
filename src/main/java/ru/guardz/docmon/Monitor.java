@@ -7,6 +7,7 @@ import com.documentum.fc.common.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,10 +96,11 @@ public class Monitor {
         return count;
     }
 
-    private static Integer getFTQueueSize(IDfSession dfSession) throws DfException {
-        final String s = "select count(*) as cnt from dmi_queue_item where name = 'dm_fulltext_index_user' and task_state not in ('failed','warning')";
+    private static Integer getFTQueueSize(IDfSession dfSession, String user) throws DfException {
+        final String s = "select count(*) as cnt from dmi_queue_item where name = ''{0}'' and task_state not in (''failed'',''warning'')";
         IDfQuery query = new DfQuery();
-        query.setDQL(s);
+        String dql = MessageFormat.format(s,user);
+        query.setDQL(dql);
         int count = 0;
         IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
         try {
@@ -224,7 +226,7 @@ public class Monitor {
             System.out.println("Total failed and halted workflows: ".concat(getDeadWorkflows(dfSession).toString()));
             System.out.println("Total workitems not associated with servers: ".concat(getBadWorkitems(dfSession).toString()));
             System.out.println("IndexAgent status: ".concat(statusOfIA(dfSession)));
-            System.out.println("Total number of queued items: ".concat(getFTQueueSize(dfSession).toString()));
+            System.out.println("Total number of queued items: ".concat(getFTQueueSize(dfSession, "dm_fulltext_index_user").toString()));
             System.out.println("Fulltext Search status: ".concat((checkFTSearch(dfSession).toString())));
 
             if (fetchContent(dfSession)) System.out.println("Can fetch content!");
