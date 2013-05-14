@@ -23,7 +23,10 @@ public class Monitor {
         IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
         try {
             while (collection.next()) {
-                count++;
+                String status = collection.getString("session_status");
+                if (status.equals("Active")) {
+                    count++;
+                }
             }
         } catch (DfException e) {
             e.printStackTrace();
@@ -217,7 +220,7 @@ public class Monitor {
             for (int i = 0; i < size; i++) {
                 System.out.println(sessions.get(i));
             }*/
-            System.out.println("Total open sessions in docbase: ".concat(getSessionCount(dfSession).toString()));
+            System.out.println("Total open active sessions in docbase: ".concat(getSessionCount(dfSession).toString()));
             System.out.println("Total failed and halted workflows: ".concat(getDeadWorkflows(dfSession).toString()));
             System.out.println("Total workitems not associated with servers: ".concat(getBadWorkitems(dfSession).toString()));
             System.out.println("IndexAgent status: ".concat(statusOfIA(dfSession)));
