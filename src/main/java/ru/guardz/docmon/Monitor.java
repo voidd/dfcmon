@@ -53,15 +53,15 @@ public class Monitor {
 
     private static Options construct() {
         Options options = new Options();
-        options.addOption( "u", "username", true, "user name in docbase" );
-        options.addOption( "p", "password", true, "password in docbase" );
-        options.addOption( "d", "docbase", true, "docbase name" );
-        options.addOption( "S", "sessions", false, "list sessions count");
-        options.addOption( "F", "fulltext", false, "show fulltext queue size" );
-        options.addOption( "W", "workflows", false, "show bad workflows count" );
-        options.addOption( "w", "workitems", false, "show bad workitems count");
-        options.addOption( "c", "content", false, "fetching content from docbase");
-        options.addOption( "s", "search", false, "search in Fulltext");
+        options.addOption("u", "username", true, "user name in docbase");
+        options.addOption("p", "password", true, "password in docbase");
+        options.addOption("d", "docbase", true, "docbase name");
+        options.addOption("S", "sessions", false, "list sessions count");
+        options.addOption("F", "fulltext", false, "show fulltext queue size");
+        options.addOption("W", "workflows", false, "show bad workflows count");
+        options.addOption("w", "workitems", false, "show bad workitems count");
+        options.addOption("c", "content", false, "fetching content from docbase");
+        options.addOption("s", "search", false, "search in Fulltext");
 
         return options;
     }
@@ -73,17 +73,16 @@ public class Monitor {
         String password = null;
         String docbase = null;
         String app = "Jilime";
-        if (args.length < 1)
-        {
+        if (args.length < 1) {
             System.out.println("-- USAGE --");
             printUsage(options, app, System.out);
         }
 
-            try {
+        try {
             // parse the command line arguments
             CommandLine line = parser.parse(options, args);
 
-            if( line.hasOption("u") ) {
+            if (line.hasOption("u")) {
                 username = options.getOption("u").getValue();
             }
             if (line.hasOption("p")) {
@@ -92,16 +91,15 @@ public class Monitor {
             if (line.hasOption("d")) {
                 docbase = options.getOption("d").getValue();
             }
-            sm = connect(username,password,docbase);
-        }
-        catch( ParseException exp ) {
-            System.out.println( "Unexpected exception:" + exp.getMessage() );
-            printUsage(options, app,System.out);
+            sm = connect(username, password, docbase);
+        } catch (ParseException exp) {
+            System.out.println("Unexpected exception:" + exp.getMessage());
+            printUsage(options, app, System.out);
         }
         return sm;
     }
-    public static void printUsage(final Options options, final String name, final OutputStream out)
-    {
+
+    public static void printUsage(final Options options, final String name, final OutputStream out) {
         final PrintWriter writer = new PrintWriter(out);
         final HelpFormatter usageFormatter = new HelpFormatter();
         usageFormatter.printUsage(writer, 80, name, options);
@@ -155,9 +153,9 @@ public class Monitor {
         int count = 0;
         IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
         try {
-                if (collection.next()) {
-                    count = collection.getInt("cnt");
-                }
+            if (collection.next()) {
+                count = collection.getInt("cnt");
+            }
         } catch (DfException e) {
             e.printStackTrace();
         } finally {
@@ -191,7 +189,7 @@ public class Monitor {
     private static Integer getFTQueueSize(IDfSession dfSession, String user) throws DfException {
         final String s = "select count(*) as cnt from dmi_queue_item where name = ''{0}'' and task_state not in (''failed'',''warning'')";
         IDfQuery query = new DfQuery();
-        String dql = MessageFormat.format(s,user);
+        String dql = MessageFormat.format(s, user);
         query.setDQL(dql);
         int count = 0;
         IDfCollection collection = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
@@ -273,7 +271,7 @@ public class Monitor {
         IDfLoginInfo iLogin = clientx.getLoginInfo();
         iLogin.setUser(username);
         iLogin.setPassword(password);
-        IDfSession dfSession = client.newSession(docbase,iLogin);
+        IDfSession dfSession = client.newSession(docbase, iLogin);
         return dfSession;
     }
 
@@ -292,7 +290,6 @@ public class Monitor {
     private static boolean isConnected(IDfSession dfSession) {
         return dfSession != null;
     }
-
 
     private static String statusOfIA(IDfSession dfSession) throws DfException {
         String ret = null;
