@@ -3,10 +3,16 @@ package ru.guardz.docmon;
 import com.documentum.com.DfClientX;
 import com.documentum.com.IDfClientX;
 import com.documentum.fc.client.*;
-import com.documentum.fc.common.*;
+import com.documentum.fc.common.DfException;
+import com.documentum.fc.common.DfLogger;
+import com.documentum.fc.common.IDfId;
+import com.documentum.fc.common.IDfLoginInfo;
+import org.apache.commons.cli.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +20,93 @@ import java.util.List;
 public class Monitor {
 
     private static String OS = System.getProperty("os.name").toLowerCase();
-    private static IDfSession dfSession;
+
+    public static void main(String[] args) throws DfException {
+
+        IDfSession dfSession = initial(args, construct());
+
+        try {
+            System.out.println("Successfully connect to the repository ");
+/*
+            System.out.println("JMS Config ".concat(getJMSConfig(dfSession)));
+            List<String> sessions = getActiveSessions(dfSession);
+            int size = sessions.size();
+            for (int i = 0; i < size; i++) {
+                System.out.println(sessions.get(i));
+            }*/
+            System.out.println("Total open active sessions in docbase: ".concat(getSessionCount(dfSession).toString()));
+            System.out.println("Total failed and halted workflows: ".concat(getDeadWorkflows(dfSession).toString()));
+            System.out.println("Total workitems not associated with servers: ".concat(getBadWorkitems(dfSession).toString()));
+            System.out.println("IndexAgent status: ".concat(statusOfIA(dfSession)));
+            System.out.println("Total number of queued items: ".concat(getFTQueueSize(dfSession, "dm_fulltext_index_user").toString()));
+            System.out.println("Fulltext Search status: ".concat((checkFTSearch(dfSession).toString())));
+
+            if (fetchContent(dfSession)) System.out.println("Can fetch content!");
+
+        } catch (Throwable t) {
+            DfLogger.fatal(dfSession, t.getMessage(), null, t);
+        } finally {
+            assert dfSession != null;
+            dfSession.disconnect();
+        }
+    }
+
+    private static Options construct() {
+        Options options = new Options();
+        options.addOption( "u", "username", true, "user name in docbase" );
+        options.addOption( "p", "password", true, "password in docbase" );
+        options.addOption( "d", "docbase", true, "docbase name" );
+        options.addOption( "S", "sessions", false, "list sessions count");
+        options.addOption( "F", "fulltext", false, "show fulltext queue size" );
+        options.addOption( "W", "workflows", false, "show bad workflows count" );
+        options.addOption( "w", "workitems", false, "show bad workitems count");
+        options.addOption( "c", "content", false, "fetching content from docbase");
+        options.addOption( "s", "search", false, "search in Fulltext");
+
+        return options;
+    }
+
+    private static IDfSession initial(String[] args, Options options) throws DfException {
+        CommandLineParser parser = new BasicParser();
+        IDfSession sm = null;
+        String username = null;
+        String password = null;
+        String docbase = null;
+        String app = "Jilime";
+        if (args.length < 1)
+        {
+            System.out.println("-- USAGE --");
+            printUsage(options, app, System.out);
+        }
+
+            try {
+            // parse the command line arguments
+            CommandLine line = parser.parse(options, args);
+
+            if( line.hasOption("u") ) {
+                username = options.getOption("u").getValue();
+            }
+            if (line.hasOption("p")) {
+                password = options.getOption("p").getValue();
+            }
+            if (line.hasOption("d")) {
+                docbase = options.getOption("d").getValue();
+            }
+            sm = connect(username,password,docbase);
+        }
+        catch( ParseException exp ) {
+            System.out.println( "Unexpected exception:" + exp.getMessage() );
+            printUsage(options, app,System.out);
+        }
+        return sm;
+    }
+    public static void printUsage(final Options options, final String name, final OutputStream out)
+    {
+        final PrintWriter writer = new PrintWriter(out);
+        final HelpFormatter usageFormatter = new HelpFormatter();
+        usageFormatter.printUsage(writer, 80, name, options);
+        writer.close();
+    }
 
     private static Integer getSessionCount(IDfSession dfSession) throws DfException {
         final String s = "EXECUTE show_sessions";
@@ -138,7 +230,7 @@ public class Monitor {
     }
 
     private static Boolean fetchContent(IDfSession dfSession) throws DfException, IOException {
-        isConnected();
+        isConnected(dfSession);
         final String s = "select r_object_id from dm_document where folder('/System/Sysadmin/Reports') enable (RETURN_TOP 1)";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
@@ -175,15 +267,14 @@ public class Monitor {
         return file.exists();
     }
 
-    private static IDfSessionManager initConnect(String[] args) throws DfException {
+    private static IDfSession connect(String username, String password, String docbase) throws DfException {
         IDfClientX clientx = new DfClientX();
         IDfClient client = clientx.getLocalClient();
         IDfLoginInfo iLogin = clientx.getLoginInfo();
-        iLogin.setUser(args[0]);
-        iLogin.setPassword(args[1]);
-        IDfSessionManager dfSessionManager = client.newSessionManager();
-        dfSessionManager.setIdentity(args[2], iLogin);
-        return dfSessionManager;
+        iLogin.setUser(username);
+        iLogin.setPassword(password);
+        IDfSession dfSession = client.newSession(docbase,iLogin);
+        return dfSession;
     }
 
     private static boolean isWindows() {
@@ -198,46 +289,10 @@ public class Monitor {
         return (OS.contains("sunos"));
     }
 
-    private static boolean isConnected() {
+    private static boolean isConnected(IDfSession dfSession) {
         return dfSession != null;
     }
 
-    public static void main(String[] args) throws DfException {
-        if (args.length < 3) {
-            String message = "Wrong parameter's number. Must be at least 3 parameters: "
-                    + "<user_name> <password> <repository>";
-            DfLogger.error(Monitor.class, message, null, null);
-            throw new DfCriticalException(message);
-        }
-        String docbaseName = args[2];
-        IDfSessionManager dfSessionManager = initConnect(args);
-
-        try {
-            dfSession = dfSessionManager.newSession(docbaseName);
-            System.out.println("Successfully connect to the repository ".concat(docbaseName));
-/*
-            System.out.println("JMS Config ".concat(getJMSConfig(dfSession)));
-            List<String> sessions = getActiveSessions(dfSession);
-            int size = sessions.size();
-            for (int i = 0; i < size; i++) {
-                System.out.println(sessions.get(i));
-            }*/
-            System.out.println("Total open active sessions in docbase: ".concat(getSessionCount(dfSession).toString()));
-            System.out.println("Total failed and halted workflows: ".concat(getDeadWorkflows(dfSession).toString()));
-            System.out.println("Total workitems not associated with servers: ".concat(getBadWorkitems(dfSession).toString()));
-            System.out.println("IndexAgent status: ".concat(statusOfIA(dfSession)));
-            System.out.println("Total number of queued items: ".concat(getFTQueueSize(dfSession, "dm_fulltext_index_user").toString()));
-            System.out.println("Fulltext Search status: ".concat((checkFTSearch(dfSession).toString())));
-
-            if (fetchContent(dfSession)) System.out.println("Can fetch content!");
-
-        } catch (Throwable t) {
-            DfLogger.fatal(dfSessionManager, t.getMessage(), null, t);
-        } finally {
-            assert dfSession != null;
-            dfSession.disconnect();
-        }
-    }
 
     private static String statusOfIA(IDfSession dfSession) throws DfException {
         String ret = null;
