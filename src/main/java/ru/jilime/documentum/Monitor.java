@@ -27,21 +27,39 @@ public class Monitor {
     private static String OS = System.getProperty("os.name").toLowerCase();
 
     public static void main(String[] args) throws DfException {
+        Options options = construct();
+        IDfSession dfSession = initial(args, options);
 
-        IDfSession dfSession = initial(args, construct());
+        CommandLineParser parser = new BasicParser();
 
         try {
-            System.out.println("Total open active sessions in docbase: ".concat(getSessionCount(dfSession).toString()));
-            System.out.println("Total failed and halted workflows: ".concat(getDeadWorkflows(dfSession).toString()));
-            System.out.println("Total workitems not associated with servers: ".concat(getBadWorkitems(dfSession).toString()));
-            System.out.println("IndexAgent status: ".concat(statusOfIA(dfSession)));
-            System.out.println("Total number of queued items: ".concat(getFTQueueSize(dfSession, "dm_fulltext_index_user").toString()));
-            System.out.println("Fulltext Search status: ".concat((checkFTSearch(dfSession).toString())));
+            CommandLine line = parser.parse(options, args);
 
-            if (fetchContent(dfSession)) System.out.println("Can fetch content!");
+            if (line.hasOption("S")) {
+                System.out.println("Total open active sessions in docbase: ".concat(getSessionCount(dfSession).toString()));
+            }
+            if (line.hasOption("i")) {
+                System.out.println("IndexAgent status: ".concat(statusOfIA(dfSession)));
+            }
+            if (line.hasOption("W")) {
+                System.out.println("Total failed and halted workflows: ".concat(getDeadWorkflows(dfSession).toString()));
+            }
+            if (line.hasOption("w")) {
+                System.out.println("Total workitems not associated with servers: ".concat(getBadWorkitems(dfSession).toString()));
+            }
+            if (line.hasOption("F")) {
+                System.out.println("Fulltext Search status: ".concat((checkFTSearch(dfSession).toString())));
+            }
+            if (line.hasOption("c")) {
+                if (fetchContent(dfSession)) System.out.println("Can fetch content!");
+            }
+            if (line.hasOption("q") && line.hasOption("fu")) {
+                System.out.println("Total number of queued items: ".concat(getFTQueueSize(dfSession, "..").toString()));
+            }
 
         } catch (Throwable t) {
             DfLogger.fatal(dfSession, t.getMessage(), null, t);
+            DfLogger.error(Monitor.class, "Exception while parsing ", null, t);
         } finally {
             assert dfSession != null;
             dfSession.disconnect();
@@ -54,11 +72,12 @@ public class Monitor {
         options.addOption("p", "password", true, "password in docbase");
         options.addOption("d", "docbase", true, "docbase name");
         options.addOption("S", "sessions", false, "list sessions count");
-        options.addOption("F", "fulltext", false, "show fulltext queue size");
+        options.addOption("i", "indexagent", false, "show indexagents statuses");
         options.addOption("W", "workflows", false, "show bad workflows count");
         options.addOption("w", "workitems", false, "show bad workitems count");
         options.addOption("c", "content", false, "fetching content from docbase");
-        options.addOption("s", "search", false, "search in Fulltext");
+        options.addOption("F", "search", false, "search in Fulltext");
+        options.addOption("q", "queue", false, "show total number of queued items");
 
         return options;
     }
@@ -130,7 +149,7 @@ public class Monitor {
 
     private static List getIndexName(IDfSession dfSession) throws DfException {
         isConnected(dfSession);
-        final String s =  ("select fti.index_name,iac.object_name as instance_name from dm_f" +
+        final String s = ("select fti.index_name,iac.object_name as instance_name from dm_f" +
                 "ulltext_index fti, dm_ftindex_agent_config iac where fti.index_n" +
                 "ame =  iac.index_name and fti.is_standby = false and iac.force_i" +
                 "nactive = false");
@@ -138,7 +157,7 @@ public class Monitor {
         IDfCollection collection = null;
         IDfQuery query = new DfQuery();
         query.setDQL(s);
-        DfLogger.debug(Monitor.class, query.getDQL(),null,null);
+        DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
             collection = query.execute(dfSession, IDfQuery.DF_QUERY);
             while (collection.next()) {
@@ -162,7 +181,7 @@ public class Monitor {
         query.setDQL(s);
         int count = 0;
         IDfCollection collection = null;
-        DfLogger.debug(Monitor.class, query.getDQL(),null,null);
+        DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
             collection = query.execute(dfSession, IDfQuery.DF_QUERY);
             if (collection.next()) {
@@ -187,7 +206,7 @@ public class Monitor {
         query.setDQL(s);
         int count = 0;
         IDfCollection collection = null;
-        DfLogger.debug(Monitor.class, query.getDQL(),null,null);
+        DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
             collection = query.execute(dfSession, IDfQuery.DF_QUERY);
             if (collection.next()) {
@@ -212,7 +231,7 @@ public class Monitor {
         query.setDQL(dql);
         int count = 0;
         IDfCollection collection = null;
-        DfLogger.debug(Monitor.class, query.getDQL(),null,null);
+        DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
             collection = query.execute(dfSession, IDfQuery.DF_QUERY);
             if (collection.next()) {
@@ -236,7 +255,7 @@ public class Monitor {
         query.setDQL(s);
         int count = 0;
         IDfCollection collection = null;
-        DfLogger.debug(Monitor.class, query.getDQL(),null,null);
+        DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
             collection = query.execute(dfSession, IDfQuery.DF_QUERY);
             if (collection.next()) {
@@ -270,7 +289,7 @@ public class Monitor {
             DfLogger.error(Monitor.class, e.getMessage(), null, e);
         }
         IDfCollection collection = null;
-        DfLogger.debug(Monitor.class, query.getDQL(),null,null);
+        DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
             collection = query.execute(dfSession, IDfQuery.DF_QUERY);
             collection.next();
@@ -348,7 +367,7 @@ public class Monitor {
             IDfQuery query = new DfQuery();
             query.setDQL(s);
             IDfCollection collection = null;
-            DfLogger.debug(Monitor.class,query.getDQL(),null,null);
+            DfLogger.debug(Monitor.class, query.getDQL(), null, null);
             try {
                 collection = query.execute(dfSession, IDfQuery.DF_APPLY);
                 dfSession.getMessage(1);
