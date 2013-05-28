@@ -1,4 +1,4 @@
-package ru.guardz.docmon;
+package ru.jilime.documentum;
 
 import com.documentum.com.DfClientX;
 import com.documentum.com.IDfClientX;
