@@ -181,7 +181,8 @@ public class Monitor {
     private static Integer getBadWorkitems(IDfSession dfSession) throws DfException {
         isConnected(dfSession);
         final String s = "select count(*) as cnt from dmi_workitem w, dm_workflow" +
-                " wf where  w.r_workflow_id = wf.r_object_id and a_wq_name not in (select r_object_id from dm_server_config)";
+                " wf where  w.r_workflow_id = wf.r_object_id " +
+                "and a_wq_name not in (select r_object_id from dm_server_config)";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
         int count = 0;
@@ -253,7 +254,8 @@ public class Monitor {
 
     private static Boolean fetchContent(IDfSession dfSession) throws DfException, IOException {
         isConnected(dfSession);
-        final String s = "select r_object_id from dm_document where folder('/System/Sysadmin/Reports') enable (RETURN_TOP 1)";
+        final String s = "select r_object_id from dm_document" +
+                " where folder('/System/Sysadmin/Reports') enable (RETURN_TOP 1)";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
         Boolean ret = null;
