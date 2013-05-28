@@ -51,7 +51,8 @@ public class Monitor {
                         .concat(getBadWorkitems(dfSession).toString()));
             }
             if (line.hasOption("F")) {
-                System.out.println("Fulltext Search status: ".concat((checkFTSearch(dfSession).toString())));
+                System.out.println("Fulltext Search status: "
+                        .concat((checkFTSearch(dfSession).toString())));
             }
             if (line.hasOption("c")) {
                 if (fetchContent(dfSession)) System.out.println("Can fetch content!");
