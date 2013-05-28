@@ -65,7 +65,7 @@ public class Monitor {
 
     private static IDfSession initial(String[] args, Options options) throws DfException {
         CommandLineParser parser = new BasicParser();
-        IDfSession sm = null;
+        IDfSession session = null;
         String username = null;
         String password = null;
         String docbase = null;
@@ -88,12 +88,12 @@ public class Monitor {
             if (line.hasOption("d")) {
                 docbase = line.getOptionValue("d");
             }
-            sm = connect(username, password, docbase);
+            session = connect(username, password, docbase);
         } catch (ParseException e) {
             DfLogger.error(Monitor.class, "Exception while parsing ", null, e);
             printUsage(options, app, System.out);
         }
-        return sm;
+        return session;
     }
 
     public static void printUsage(final Options options, final String name, final OutputStream out) {
