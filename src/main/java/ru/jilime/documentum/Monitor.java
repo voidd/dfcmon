@@ -54,7 +54,7 @@ public class Monitor {
                 System.out.println("Fulltext Search status: "
                         .concat((checkFTSearch(dfSession).toString())));
             }
-            if (line.hasOption("c")) {
+            if (line.hasOption("C")) {
                 if (fetchContent(dfSession)) System.out.println("Can fetch content!");
             }
             if (line.hasOption("q")) {
@@ -80,7 +80,7 @@ public class Monitor {
         options.addOption("i", "indexagent", false, "show indexagents statuses");
         options.addOption("W", "workflows", false, "show bad workflows count");
         options.addOption("w", "workitems", false, "show bad workitems count");
-        options.addOption("c", "content", false, "fetching content from docbase");
+        options.addOption("C", "content", false, "fetching content from docbase");
         options.addOption("F", "search", false, "search in Fulltext");
         options.addOption("q", "queue", false, "show total number of queued items (for user)");
 
