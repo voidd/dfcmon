@@ -56,9 +56,9 @@ public class Monitor {
             if (line.hasOption("c")) {
                 if (fetchContent(dfSession)) System.out.println("Can fetch content!");
             }
-            if (line.hasOption("q") && line.hasOption("fu")) {
+            if (line.hasOption("q")) {
                 System.out.println("Total number of queued items: "
-                        .concat(getFTQueueSize(dfSession, "..").toString()));
+                        .concat(getFTQueueSize(dfSession, line.getOptionValue("q")).toString()));
             }
 
         } catch (Throwable t) {
@@ -81,7 +81,7 @@ public class Monitor {
         options.addOption("w", "workitems", false, "show bad workitems count");
         options.addOption("c", "content", false, "fetching content from docbase");
         options.addOption("F", "search", false, "search in Fulltext");
-        options.addOption("q", "queue", false, "show total number of queued items");
+        options.addOption("q", "queue", false, "show total number of queued items (for user)");
 
         return options;
     }
@@ -167,6 +167,7 @@ public class Monitor {
             while (collection.next()) {
                 result.add(new IndexAgentInfo(collection.getString("index_name").trim(),
                         collection.getString("instance_name").trim()));
+                DfLogger.debug(Monitor.class, result.toString(), null, null);
             }
         } catch (DfException e) {
             DfLogger.error(Monitor.class, e.getMessage(), null, e);
@@ -299,7 +300,9 @@ public class Monitor {
             collection.next();
             IDfId id = collection.getId("r_object_id");
             IDfSysObject sysObject = (IDfSysObject) dfSession.getObject(id);
+            DfLogger.debug(Monitor.class, id.toString(), null, null);
             sysObject.getFile(filename);
+            DfLogger.debug(Monitor.class, sysObject.getFile(filename), null, null);
         } catch (DfException e) {
             DfLogger.error(Monitor.class, e.getMessage(), null, e);
         } finally {
@@ -334,6 +337,7 @@ public class Monitor {
         IDfSession dfSession = null;
         try {
             dfSession = client.newSession(docbase, iLogin);
+            DfLogger.debug(Monitor.class, dfSession.toString(), null, null);
         } catch (DfException e) {
             DfLogger.error(Monitor.class, e.getMessage(), null, null);
         } finally {
@@ -387,6 +391,8 @@ public class Monitor {
                     } else if (Integer.parseInt(status) == 0) {
                         ret = indexAgentName.concat(" is running");
                     }
+                    DfLogger.debug(Monitor.class, indexAgentName.concat("\n") + indexName.concat("\n")
+                            + instanceName.concat("\n"), null, null);
                 }
             } catch (DfException e) {
                 DfLogger.error(Monitor.class, e.getMessage(), null, e);
