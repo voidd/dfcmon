@@ -6,12 +6,8 @@ WARNING=1
 CRITICAL=2
 UNKNOWN=3
 
-#Input declaration
-WARN=$1
-CRIT=$2
-
 # environment
-JAVA_HOME=/usr/java
+JAVA_HOME=/usr/java/latest
 
 PROG=`/bin/basename $0`
 GREP=/bin/grep
@@ -22,7 +18,7 @@ print_usage() {
     echo "Usage: $PROG -u <username> -p <password> -d <docbase_name> -w <sec> -c <sec> -[SiWwFC] -q <fulltext index user>"
 }
 
-if [ $# -lt 3 ]; then
+if [ $# -lt 4 ]; then
     print_usage
     exit $UNKNOWN
 fi
@@ -56,11 +52,11 @@ case "$1" in
             shift 2;
             ;;
         -w)
-            W_TIME=$2;
+            WARN=$2;
             shift 2;
             ;;
         -c)
-            C_TIME=$2;
+            CRIT=$2;
             shift 2;
             ;;
 	-q)
@@ -69,23 +65,23 @@ case "$1" in
 	    ;;
 	-S)
 	    COMMAND="-S";
-	    shift 2;
+	    shift 1;
 	    ;;
 	-W)
 	    COMMAND="-W";
-	    shift 2;
+	    shift 1;
 	    ;;
 	-w)
 	    COMMAND="-w";
-	    shift 2;
+	    shift 1;
 	    ;;
 	-i)
 	    COMMAND="-i";
-	    shift 2;
+	    shift 1;
 	    ;;
 	-F)
 	    COMMAND="-F";
-	    shift 2;
+	    shift 1;
 	    ;;
 	-C)
 	    COMMAND="-C";
@@ -99,23 +95,40 @@ case "$1" in
 esac
 done
 
-JAVA_MEM="-Xms512m -Xmx512m -XX:MaxPermSize=128m"
+# command list
+JAVA_MEM="-Xms128m -Xmx128m -XX:MaxPermSize=64m"
 CLASSPATH="classes/main;./libs/*"
 CLASS="ru.jilime.documentum.Monitor"
 CMD=${JAVA_HOME}/bin/java ${JAVA_MEM} -cp ${CLASSPATH} ${CLASS} -u ${USERNAME} -p ${PASSWORD} -d ${DOCBASE} ${COMMAND}
 
-NOW_T=`date '+%s'`
-#Documentum check
+# check what time - this is a start point
+#NOW_T=`date '+%s'`
+
+# time check
 RESULT="`${CMD}`"
 
+if [ ${COMMAND} eq "-C" && $? == 0 ] ; then
+	content
+fi
+
+content() {
+if [ $RESULT == 0 ] ; then
+	$ECHO "OK!"
+	exit $OK
+elif [ ${RESULT} == 1 ] ; then
+	$ECHO "WARNING!"
+	exit $WARNING
+fi
+}
+	
+	
+
 if [ $? == 0 ] ; then
-	END_T=`date '+%s'`
-	let "res = ${END_T} - ${NOW_T}"
-    if [ $res -lt $W_TIME ] ; then
+    if [ $RESULT -lt $WARN ] ; then
        $ECHO "OK!"
        exit $OK
-    elif [ $res -ge $W_TIME] ; then
-	    if [ $res -lt $C_TIME]; then
+    elif [ $RESULT -ge $WARN] ; then
+	    if [ $RESULT -lt $CRIT]; then
 		    $ECHO "WARNING!"
 		    exit $WARNING
 	    fi
@@ -124,5 +137,6 @@ if [ $? == 0 ] ; then
     fi
 fi
 
-$ECHO "ERROR while retrieving docbroker information!"
+$ECHO "ERROR while retrieving information from Documentum!"
+$ECHO $!
 exit $CRITICAL

@@ -88,10 +88,9 @@ public class Monitor {
         String username = null;
         String password = null;
         String docbase = null;
-        String app = "Jilime";
         if (args.length < 1) {
             System.out.println("Class usage info:");
-            printUsage(options, app, System.out);
+            printUsage(options, System.out);
         }
 
         try {
@@ -110,15 +109,15 @@ public class Monitor {
             session = connect(username, password, docbase);
         } catch (ParseException e) {
             DfLogger.error(Monitor.class, "Exception while parsing ", null, e);
-            printUsage(options, app, System.out);
+            printUsage(options, System.out);
         }
         return session;
     }
 
-    public static void printUsage(final Options options, final String name, final OutputStream out) {
+    public static void printUsage(final Options options, final OutputStream out) {
         final PrintWriter writer = new PrintWriter(out);
         final HelpFormatter usageFormatter = new HelpFormatter();
-        usageFormatter.printUsage(writer, 80, name, options);
+        usageFormatter.printUsage(writer, 80, Monitor.class.getName(), options);
         writer.close();
     }
 
