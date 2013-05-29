@@ -88,13 +88,13 @@ case "$1" in
 	    COMMAND="-W";
 	    shift 1;
 	    ;;
-	-w)
-	    COMMAND="-w";
+	-b)
+	    COMMAND="-b";
 	    shift 1;
 	    ;;
 	-i)
 	    COMMAND="-i";
-	    shift 2;
+	    shift 1;
 	    ;;
 	-F)
 	    COMMAND="-F";
@@ -135,8 +135,8 @@ if [ $? == 0 ] ; then
     if [ $RESULT -lt $WARN ] ; then
        $ECHO "OK!"
        exit $OK
-    elif [ $RESULT -ge $WARN] ; then
-	    if [ $RESULT -lt $CRIT]; then
+    elif [ $RESULT -ge $WARN ] ; then
+	    if [ $RESULT -lt $CRIT ]; then
 		    $ECHO "WARNING!"
 		    exit $WARNING
 	    fi

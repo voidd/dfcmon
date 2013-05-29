@@ -44,7 +44,7 @@ public class Monitor {
             if (line.hasOption("W")) {
                 System.out.println(getDeadWorkflows(dfSession).toString());
             }
-            if (line.hasOption("w")) {
+            if (line.hasOption("b")) {
                 System.out.println(getBadWorkitems(dfSession).toString());
             }
             if (line.hasOption("F")) {
@@ -74,7 +74,7 @@ public class Monitor {
         options.addOption("S", "sessions", false, "list sessions count");
         options.addOption("i", "indexagent", false, "show indexagents statuses");
         options.addOption("W", "workflows", false, "show bad workflows count");
-        options.addOption("w", "workitems", false, "show bad workitems count");
+        options.addOption("b", "workitems", false, "show bad workitems count");
         options.addOption("C", "content", false, "fetching content from docbase");
         options.addOption("F", "search", false, "search in Fulltext");
         options.addOption("q", "queue", false, "show total number of queued items (for user)");
