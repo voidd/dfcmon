@@ -36,30 +36,25 @@ public class Monitor {
             CommandLine line = parser.parse(options, args);
 
             if (line.hasOption("S")) {
-                System.out.println("Total open active sessions in docbase: "
-                        .concat(getSessionCount(dfSession).toString()));
+                System.out.println(getSessionCount(dfSession).toString());
             }
             if (line.hasOption("i")) {
-                System.out.println("IndexAgent status: ".concat(statusOfIA(dfSession)));
+                System.out.println(statusOfIA(dfSession));
             }
             if (line.hasOption("W")) {
-                System.out.println("Total failed and halted workflows: "
-                        .concat(getDeadWorkflows(dfSession).toString()));
+                System.out.println(getDeadWorkflows(dfSession).toString());
             }
             if (line.hasOption("w")) {
-                System.out.println("Total workitems not associated with servers: "
-                        .concat(getBadWorkitems(dfSession).toString()));
+                System.out.println(getBadWorkitems(dfSession).toString());
             }
             if (line.hasOption("F")) {
-                System.out.println("Fulltext Search status: "
-                        .concat((checkFTSearch(dfSession).toString())));
+                System.out.println((checkFTSearch(dfSession).toString()));
             }
             if (line.hasOption("C")) {
-                if (fetchContent(dfSession)) System.out.println("Can fetch content!");
+                if (fetchContent(dfSession)) System.out.print(true);
             }
             if (line.hasOption("q")) {
-                System.out.println("Total number of queued items: "
-                        .concat(getFTQueueSize(dfSession, line.getOptionValue("q")).toString()));
+                System.out.println(getFTQueueSize(dfSession, line.getOptionValue("q")).toString());
             }
 
         } catch (Throwable t) {
