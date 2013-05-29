@@ -51,7 +51,7 @@ public class Monitor {
                 System.out.println((checkFTSearch(dfSession).toString()));
             }
             if (line.hasOption("C")) {
-                if (fetchContent(dfSession)) System.out.print(true);
+                if (fetchContent(dfSession)) System.out.print(0);
             }
             if (line.hasOption("q")) {
                 System.out.println(getFTQueueSize(dfSession, line.getOptionValue("q")).toString());
