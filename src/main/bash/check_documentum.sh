@@ -32,10 +32,10 @@ count=`${WC} ${res}`
 
 # print usage function
 print_usage() {
-    echo "Usage: $PROG -u <username> -p <password> -d <docbase_name> -w <sec> -c <sec> -[SiWwFC] -q <fulltext index user>"
+    echo "Usage: $PROG -u <username> -p <password> -d <docbase_name> -w <warning_int> -c <warning_int> -[SiWbFC] -q <fulltext index user>"
 }
 
-if [ $# -lt 4 ]; then
+if [ $# -lt 11 ]; then
     print_usage
     exit $UNKNOWN
 fi
@@ -71,10 +71,20 @@ case "$1" in
         -w)
             WARN=$2;
             shift 2;
+	    if [ "${WARN}" == 0 ] ; then
+	    	print_usage
+		echo "Please make sure warning integer is not 0!"
+		exit $UNKNOWN
+	    fi	
             ;;
         -c)
             CRIT=$2;
             shift 2;
+	    if [ "${CRIT}" == 0 ] && [ "${CRIT}" -lt "${WARN}" ] ; then
+	    	print_usage
+		echo "Please make sure critical integer is not 0 and bigger than warning integer!"
+		exit $UNKNOWN
+	    fi	
             ;;
 	-q)
 	    COMMAND="-q ${2}";
@@ -122,12 +132,12 @@ CMD="${JAVA_HOME}/bin/java ${JAVA_MEM} -cp "${CLASSPATH}" ${CLASS} -u ${USERNAME
 RESULT="`${CMD}`"
 
 # check is there boolean function?
-if [ ${COMMAND} == "-C" ] || [ ${COMMAND} == "-F" ] && [ $? == 0 ] ; then
+if [ "${COMMAND}" == "-C" ] || [ "${COMMAND}" == "-F" ] && [ $? == 0 ] ; then
 	bool_result
 fi
 
 # check is there result from IndexAgent
-if [ ${COMMAND} == "-i" ] && [ $? == 0 ] ; then
+if [ "${COMMAND}" == "-i" ] && [ $? == 0 ] ; then
 	index_agent_result
 fi
 
