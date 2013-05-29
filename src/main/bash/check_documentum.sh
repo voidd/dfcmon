@@ -13,7 +13,24 @@ PROG=`/bin/basename $0`
 GREP=/bin/grep
 ECHO=/bin/echo
 
+# function for boolean results
+bool_result() {
+if [ $RESULT == 0 ] ; then
+	$ECHO "OK!"
+	exit $OK
+elif [ ${RESULT} >= 1 ] ; then
+	$ECHO "WARNING!"
+	exit $WARNING
+fi
+}
 
+# function for checking Indexagent results
+index_agent_result() {
+res=`${GREP} -i 'running' ${RESULT}`
+count=`${WC} ${res}`
+}	
+
+# print usage function
 print_usage() {
     echo "Usage: $PROG -u <username> -p <password> -d <docbase_name> -w <sec> -c <sec> -[SiWwFC] -q <fulltext index user>"
 }
@@ -77,7 +94,7 @@ case "$1" in
 	    ;;
 	-i)
 	    COMMAND="-i";
-	    shift 1;
+	    shift 2;
 	    ;;
 	-F)
 	    COMMAND="-F";
@@ -85,7 +102,7 @@ case "$1" in
 	    ;;
 	-C)
 	    COMMAND="-C";
-	    shift 2;
+	    shift 1;
 	    ;;
         *)
             echo "Unknown argument: $1"
@@ -97,31 +114,22 @@ done
 
 # command list
 JAVA_MEM="-Xms128m -Xmx128m -XX:MaxPermSize=64m"
-CLASSPATH="classes/main;./libs/*"
+CLASSPATH="classes/main:.:./libs/*"
 CLASS="ru.jilime.documentum.Monitor"
-CMD=${JAVA_HOME}/bin/java ${JAVA_MEM} -cp ${CLASSPATH} ${CLASS} -u ${USERNAME} -p ${PASSWORD} -d ${DOCBASE} ${COMMAND}
+CMD="${JAVA_HOME}/bin/java ${JAVA_MEM} -cp "${CLASSPATH}" ${CLASS} -u ${USERNAME} -p ${PASSWORD} -d ${DOCBASE} ${COMMAND}"
 
-# check what time - this is a start point
-#NOW_T=`date '+%s'`
-
-# time check
+# all check results
 RESULT="`${CMD}`"
 
-if [ ${COMMAND} eq "-C" && $? == 0 ] ; then
-	content
+# check is there boolean function?
+if [ ${COMMAND} == "-C" ] || [ ${COMMAND} == "-F" ] && [ $? == 0 ] ; then
+	bool_result
 fi
 
-content() {
-if [ $RESULT == 0 ] ; then
-	$ECHO "OK!"
-	exit $OK
-elif [ ${RESULT} == 1 ] ; then
-	$ECHO "WARNING!"
-	exit $WARNING
+# check is there result from IndexAgent
+if [ ${COMMAND} == "-i" ] && [ $? == 0 ] ; then
+	index_agent_result
 fi
-}
-	
-	
 
 if [ $? == 0 ] ; then
     if [ $RESULT -lt $WARN ] ; then

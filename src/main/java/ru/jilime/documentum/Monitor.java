@@ -48,7 +48,7 @@ public class Monitor {
                 System.out.println(getBadWorkitems(dfSession).toString());
             }
             if (line.hasOption("F")) {
-                System.out.println((checkFTSearch(dfSession).toString()));
+                if (checkFTSearch(dfSession)) System.out.print(0);
             }
             if (line.hasOption("C")) {
                 if (fetchContent(dfSession)) System.out.print(0);
@@ -336,7 +336,7 @@ public class Monitor {
         } catch (DfException e) {
             DfLogger.error(Monitor.class, e.getMessage(), null, null);
         } finally {
-            System.out.println("Success owning session in docbase " + docbase);
+            DfLogger.info(Monitor.class, "Success owning session in docbase " + docbase, null, null);
         }
         return dfSession;
     }
