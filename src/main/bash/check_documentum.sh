@@ -12,6 +12,8 @@ JAVA_HOME=/usr/java/latest
 PROG=`/bin/basename $0`
 GREP=/bin/grep
 ECHO=/bin/echo
+WC=/usr/bin/wc
+BASEDIR=`dirname $0`
 
 # function for boolean results
 bool_result() {
@@ -26,8 +28,16 @@ fi
 
 # function for checking Indexagent results
 index_agent_result() {
-res=`${GREP} -i 'running' ${RESULT}`
-count=`${WC} ${res}`
+if [ `${GREP} -i 'running' ${RESULT} | {$WC} -l` -ge 1] ; then
+	echo "${RESULT}"
+	exit $OK
+elif [ `${GREP} -i 'shutdown' ${RESULT} | ${WC} -l` -eq 1 ] && [ `${GREP} -i 'running' ${RESULT} | ${WC} -l` -ge 1 ] ; then
+	echo "${RESULT}"
+	exit $WARNING
+elif [ `${GREP} -i 'running' ${RESULT} | ${WC} -l` -lt 1 ] && [ `${GREP} -i 'shutdown' ${RESULT} | ${WC} -l` -ge 1 ] ; then
+	echo "${RESULT}"
+	exit $CRITICAL
+fi	
 }	
 
 # print usage function
@@ -129,7 +139,7 @@ CLASS="ru.jilime.documentum.Monitor"
 CMD="${JAVA_HOME}/bin/java ${JAVA_MEM} -cp "${CLASSPATH}" ${CLASS} -u ${USERNAME} -p ${PASSWORD} -d ${DOCBASE} ${COMMAND}"
 
 # all check results
-RESULT="`${CMD}`"
+RESULT=`cd ${BASEDIR}; ${CMD}`
 
 # check is there boolean function?
 if [ "${COMMAND}" == "-C" ] || [ "${COMMAND}" == "-F" ] && [ $? == 0 ] ; then
@@ -138,19 +148,20 @@ fi
 
 # check is there result from IndexAgent
 if [ "${COMMAND}" == "-i" ] && [ $? == 0 ] ; then
+	s="${RESULT}"
 	index_agent_result
 fi
 
 if [ $? == 0 ] ; then
     if [ $RESULT -lt $WARN ] ; then
-       $ECHO "OK!"
+       $ECHO "OK! Total ${RESULT}"
        exit $OK
     elif [ $RESULT -ge $WARN ] ; then
 	    if [ $RESULT -lt $CRIT ]; then
-		    $ECHO "WARNING!"
+		    $ECHO "WARNING! Total ${RESULT}"
 		    exit $WARNING
 	    fi
-	$ECHO "CRITICAL"
+	$ECHO "CRITICAL! Total ${RESULT}"
 	exit $CRITICAL
     fi
 fi
