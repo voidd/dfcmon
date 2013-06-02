@@ -62,6 +62,15 @@ public class Monitor {
             if (line.hasOption("Qt")) {
                 System.out.println(getTotalQueueSize(dfSession).toString());
             }
+            if (line.hasOption("f")) {
+                System.out.println(getFolderItemsCount(dfSession, line.getOptionValue("f")).toString());
+            }
+            if (line.hasOption("t")) {
+                System.out.println(getSystemTime(dfSession));
+            }
+            if (line.hasOption("td")) {
+                System.out.println(getTodayDocsCount(dfSession).toString());
+            }
 
         } catch (Throwable t) {
             DfLogger.fatal(dfSession, t.getMessage(), null, t);
@@ -86,6 +95,9 @@ public class Monitor {
         options.addOption("q", "queue", true, "show total number of failed queued items (for user)");
         options.addOption("Q", "queueitem", false, "show total number of queued items marked for deletion");
         options.addOption("Qt", "totalqueueitem", false, "show total number of queue items");
+        options.addOption("f", "folder", true, "get items count in particular folder");
+        options.addOption("t", "systime", false, "show current docbase time");
+        options.addOption("td", "todaydocs", false, "show all documents created today");
 
         return options;
     }
@@ -257,7 +269,8 @@ public class Monitor {
 
     private static Integer getQueueSize(IDfSession dfSession) throws DfException {
         isConnected(dfSession);
-        final String s = "select count(*) as cnt from dmi_queue_item where delete_flag=1 and date_send < date(today)-15";
+        final String s = "select count(*) as cnt from dmi_queue_item " +
+                "where delete_flag=1 and date_send < date(today)-15";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
         int count = 0;
@@ -299,6 +312,77 @@ public class Monitor {
             }
         }
         return count;
+    }
+
+    private static Integer getFolderItemsCount(IDfSession dfSession, String folder) throws DfException {
+        isConnected(dfSession);
+        final String s = "select count(*) as cnt from dm_document(all)" +
+                " where folder('/%s')";
+        IDfQuery query = new DfQuery();
+        String dql = String.format(s, folder);
+        query.setDQL(dql);
+        int count = 0;
+        IDfCollection collection = null;
+        DfLogger.debug(Monitor.class, query.getDQL(), null, null);
+        try {
+            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            if (collection.next()) {
+                count = collection.getInt("cnt");
+            }
+        } catch (DfException e) {
+            DfLogger.error(Monitor.class, e.getMessage(), null, e);
+        } finally {
+            if (collection != null) {
+                collection.close();
+            }
+        }
+        return count;
+    }
+
+    private static Integer getTodayDocsCount(IDfSession dfSession) throws DfException {
+        isConnected(dfSession);
+        final String s = "select count(*) as cnt from dm_document" +
+                " where r_creation_date >= DATE(today)";
+        IDfQuery query = new DfQuery();
+        query.setDQL(s);
+        int count = 0;
+        IDfCollection collection = null;
+        DfLogger.debug(Monitor.class, query.getDQL(), null, null);
+        try {
+            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            if (collection.next()) {
+                count = collection.getInt("cnt");
+            }
+        } catch (DfException e) {
+            DfLogger.error(Monitor.class, e.getMessage(), null, e);
+        } finally {
+            if (collection != null) {
+                collection.close();
+            }
+        }
+        return count;
+    }
+
+    private static String getSystemTime(IDfSession dfSession) throws DfException {
+        isConnected(dfSession);
+        final String s = "select DATE(now) as systime from dm_docbase_config enable(return_top 1)";
+        IDfQuery query = new DfQuery();
+        query.setDQL(s);
+        String systime = null;
+        IDfCollection collection = null;
+        DfLogger.debug(Monitor.class, query.getDQL(), null, null);
+        try {
+            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection.next();
+            systime = collection.getString("systime");
+        } catch (DfException e) {
+            DfLogger.error(Monitor.class, e.getMessage(), null, e);
+        } finally {
+            if (collection != null) {
+                collection.close();
+            }
+        }
+        return systime;
     }
 
     private static Boolean checkFTSearch(IDfSession dfSession) throws DfException {
