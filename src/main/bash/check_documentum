@@ -24,7 +24,7 @@ function timeToSeconds {
         timeStripped=${1//:/$' '}
 
         multiplier=3600
-        for item in $timeStripped
+        for item in ${timeStripped}
         do
                 item=${item#0}
 
@@ -35,7 +35,7 @@ function timeToSeconds {
 
 # function for comparing dates
 function compareDates {
-        if [ $cdate != $runDate ]
+        if [ ${cdate} != ${runDate} ]
         then
                 datesMatch="false"
         fi
@@ -43,20 +43,20 @@ function compareDates {
 
 # function for boolean results
 bool_result() {
-	if [ $RESULT == 0 ] ; then
-		$ECHO "OK!"
+	if [ ${RESULT} == 0 ] ; then
+		${ECHO} "OK!"
 		exit $OK
 	elif [ ${RESULT} >= 1 ] ; then
-		$ECHO "WARNING!"
-		exit $WARNING
+		${ECHO} "WARNING!"
+		exit ${WARNING}
 	fi
 }
 
 # function for check time
 systime() {
 
-	rundate=$(echo ${RESULT} | ${AWK} -F" " '{ print $1 }')
-	runtime=$(echo ${RESULT} | ${AWK} -F" " '{ print $2 }')
+	rundate=$(${ECHO} ${RESULT} | ${AWK} -F" " '{ print $1 }')
+	runtime=$(${ECHO} ${RESULT} | ${AWK} -F" " '{ print $2 }')
 
 
 	cdate=`${DATE} '+%d.%m.%Y'`
@@ -65,28 +65,28 @@ systime() {
 	datesMatch="true"
 	
 	compareDates
-	if [ $datesMatch == "false" ]
+	if [ ${datesMatch} == "false" ]
 	then
 	        echo "${CRITICAL}! Dates not match!"
 	        exit ${CRITICAL}
 	fi
 	
-	timeToSeconds "$runtime"
-	runSeconds=$timeSeconds
-	timeToSeconds "$ctime"
-	cTimeSeconds=$timeSeconds
+	timeToSeconds "${runtime}"
+	runSeconds=${timeSeconds}
+	timeToSeconds "${ctime}"
+	cTimeSeconds=${timeSeconds}
 	
 	timeDiff=$((cTimeSeconds - runSeconds))
 	
 	if [ ${timeDiff}  == ${WARN} ] ; then
-		$ECHO "OK! Time difference is ${timeDiff} seconds!"
+		${ECHO} "OK! Time difference is ${timeDiff} seconds!"
 		exit $OK
 	elif [ ${timeDiff} >= ${WARN} ] && [ ${timeDiff} <= ${CRIT} ] ; then
-		$ECHO "WARNING! Time difference is ${timeDiff} seconds!"
-		exit $WARNING
+		${ECHO} "WARNING! Time difference is ${timeDiff} seconds!"
+		exit ${WARNING}
 	elif [ ${timeDiff} > ${CRIT} ] ; then
 		${ECHO} "CRITICAL! Time difference is ${timeDiff} seconds!"
-		exit $CRITICAL
+		exit ${CRITICAL}
 	fi	
 }
 
@@ -94,41 +94,41 @@ systime() {
 index_agent_result() {
 	if [ `${ECHO} "${RESULT}" | ${GREP} -i 'running' | ${WC} -l` -ge 1 ] ; then
 		echo "${RESULT}"
-		exit $OK
+		exit ${OK}
 	elif [ `${ECHO} "${RESULT}" | ${GREP} -i 'shutdown' | ${WC} -l` -eq 1 ] && [ `${ECHO} "${RESULT}" | ${GREP} -i 'running' | ${WC} -l` -ge 1 ] ; then
 		echo "${RESULT}"
-		exit $WARNING
+		exit ${WARNING}
 	elif [ `${ECHO} "${RESULT}" | ${GREP} -i 'running' | ${WC} -l` -lt 1 ] && [ `${ECHO} "${RESULT}" | ${GREP} -i 'shutdown' | ${WC} -l` -ge 1 ] ; then
 		echo "${RESULT}"
-		exit $CRITICAL
+		exit ${CRITICAL}
 	fi	
 }	
 
 # print usage function
 print_usage() {
-    echo "Usage: $PROG -u <username> -p <password> -d <docbase_name> -w <warning_int> -c <warning_int> -[SiWbFC] -q <fulltext index user>"
+    echo "Usage: ${PROG} -u <username> -p <password> -d <docbase_name> -w <warning_int> -c <warning_int> -[SiWbFC] -q <fulltext index user>"
 }
 
 if [ $# -lt 11 ]; then
     print_usage
-    exit $UNKNOWN
+    exit ${UNKNOWN}
 fi
 
 # make sure script is running as documentum owner user
 if [ `whoami` = root ]; then
    echo "UNKNOWN: Please make sure script is running as documentum owner user"
-    exit $UNKNOWN
+    exit ${UNKNOWN}
 fi
 
 while test $# -gt 0; do
 case "$1" in
         --help)
             print_help
-            exit $OK
+            exit ${UNKNOWN}
             ;;
         -h)
             print_help
-            exit $OK
+            exit ${UNKNOWN}
             ;;
         -u)
             USERNAME=$2;
@@ -148,7 +148,7 @@ case "$1" in
 	    if [ "${WARN}" == 0 ] ; then
 	    	print_usage
 		echo "Please make sure warning integer is not 0!"
-		exit $UNKNOWN
+		exit ${UNKNOWN}
 	    fi	
             ;;
         -c)
@@ -157,7 +157,7 @@ case "$1" in
 	    if [ "${CRIT}" == 0 ] && [ "${CRIT}" -lt "${WARN}" ] ; then
 	    	print_usage
 		echo "Please make sure critical integer is not 0 and bigger than warning integer!"
-		exit $UNKNOWN
+		exit ${UNKNOWN}
 	    fi	
             ;;
 	-q)
@@ -197,7 +197,7 @@ case "$1" in
 	    shift 1;
 	    ;;
 	-f)
-	    COMMAND="-f {2}";
+	    COMMAND="-f ${2}";
 	    shift 2;
 	    ;;
 	-t)
@@ -209,9 +209,9 @@ case "$1" in
 	    shift 1;
 	    ;;
         *)
-            echo "Unknown argument: $1"
+            echo "Unknown argument: ${1}"
             print_usage
-            exit $UNKNOWN
+            exit ${UNKNOWN}
             ;;
 esac
 done
@@ -241,19 +241,19 @@ if [ "${COMMAND}" == "-t" ] && [ $? == 0 ] ; then
 fi
 
 if [ $? == 0 ] ; then
-    if [ $RESULT -lt $WARN ] ; then
-       $ECHO "OK! Total ${RESULT}"
+    if [ ${RESULT} -lt ${WARN} ] ; then
+       ${ECHO} "OK! Total ${RESULT}"
        exit $OK
-    elif [ $RESULT -ge $WARN ] ; then
-	    if [ $RESULT -lt $CRIT ]; then
-		    $ECHO "WARNING! Total ${RESULT}"
-		    exit $WARNING
+    elif [ ${RESULT} -ge ${WARN} ] ; then
+	    if [ ${RESULT} -lt ${CRIT} ]; then
+		    ${ECHO} "WARNING! Total ${RESULT}"
+		    exit ${WARNING}
 	    fi
-	$ECHO "CRITICAL! Total ${RESULT}"
-	exit $CRITICAL
+	${ECHO} "CRITICAL! Total ${RESULT}"
+	exit ${CRITICAL}
     fi
 fi
 
-$ECHO "ERROR while retrieving information from Documentum!"
-$ECHO $!
-exit $CRITICAL
+${ECHO} "ERROR while retrieving information from Documentum!"
+${ECHO} $!
+exit ${CRITICAL}
