@@ -60,7 +60,7 @@ public class Monitor {
                 System.out.println(getQueueSize(dfSession).toString());
             }
             if (line.hasOption("Qt")) {
-                System.out.println(getQueueSize(dfSession).toString());
+                System.out.println(getTotalQueueSize(dfSession).toString());
             }
 
         } catch (Throwable t) {
