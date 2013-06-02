@@ -54,7 +54,13 @@ public class Monitor {
                 if (fetchContent(dfSession)) System.out.print(0);
             }
             if (line.hasOption("q")) {
-                System.out.println(getFTQueueSize(dfSession, line.getOptionValue("q")).toString());
+                System.out.println(getFTFailedQueueSize(dfSession, line.getOptionValue("q")).toString());
+            }
+            if (line.hasOption("Q")) {
+                System.out.println(getQueueSize(dfSession).toString());
+            }
+            if (line.hasOption("Qt")) {
+                System.out.println(getQueueSize(dfSession).toString());
             }
 
         } catch (Throwable t) {
@@ -77,7 +83,9 @@ public class Monitor {
         options.addOption("b", "workitems", false, "show bad workitems count");
         options.addOption("C", "content", false, "fetching content from docbase");
         options.addOption("F", "search", false, "search in Fulltext");
-        options.addOption("q", "queue", false, "show total number of queued items (for user)");
+        options.addOption("q", "queue", true, "show total number of failed queued items (for user)");
+        options.addOption("Q", "queueitem", false, "show total number of queued items marked for deletion");
+        options.addOption("Qt", "totalqueueitem", false, "show total number of queue items");
 
         return options;
     }
@@ -222,13 +230,59 @@ public class Monitor {
         return count;
     }
 
-    private static Integer getFTQueueSize(IDfSession dfSession, String user) throws DfException {
+    private static Integer getFTFailedQueueSize(IDfSession dfSession, String user) throws DfException {
         isConnected(dfSession);
         final String s = "select count(*) as cnt from dmi_queue_item where name = ''{0}''" +
                 " and task_state not in (''failed'',''warning'')";
         IDfQuery query = new DfQuery();
         String dql = MessageFormat.format(s, user);
         query.setDQL(dql);
+        int count = 0;
+        IDfCollection collection = null;
+        DfLogger.debug(Monitor.class, query.getDQL(), null, null);
+        try {
+            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            if (collection.next()) {
+                count = collection.getInt("cnt");
+            }
+        } catch (DfException e) {
+            DfLogger.error(Monitor.class, e.getMessage(), null, e);
+        } finally {
+            if (collection != null) {
+                collection.close();
+            }
+        }
+        return count;
+    }
+
+    private static Integer getQueueSize(IDfSession dfSession) throws DfException {
+        isConnected(dfSession);
+        final String s = "select count(*) as cnt from dmi_queue_item where delete_flag=1 and date_send < date(today)-15";
+        IDfQuery query = new DfQuery();
+        query.setDQL(s);
+        int count = 0;
+        IDfCollection collection = null;
+        DfLogger.debug(Monitor.class, query.getDQL(), null, null);
+        try {
+            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            if (collection.next()) {
+                count = collection.getInt("cnt");
+            }
+        } catch (DfException e) {
+            DfLogger.error(Monitor.class, e.getMessage(), null, e);
+        } finally {
+            if (collection != null) {
+                collection.close();
+            }
+        }
+        return count;
+    }
+
+    private static Integer getTotalQueueSize(IDfSession dfSession) throws DfException {
+        isConnected(dfSession);
+        final String s = "select count(*) as cnt from dmi_queue_item";
+        IDfQuery query = new DfQuery();
+        query.setDQL(s);
         int count = 0;
         IDfCollection collection = null;
         DfLogger.debug(Monitor.class, query.getDQL(), null, null);

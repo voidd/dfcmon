@@ -28,13 +28,13 @@ fi
 
 # function for checking Indexagent results
 index_agent_result() {
-if [ `${GREP} -i 'running' ${RESULT} | {$WC} -l` -ge 1] ; then
+if [ `${ECHO} "${RESULT}" | ${GREP} -i 'running' | ${WC} -l` -ge 1 ] ; then
 	echo "${RESULT}"
 	exit $OK
-elif [ `${GREP} -i 'shutdown' ${RESULT} | ${WC} -l` -eq 1 ] && [ `${GREP} -i 'running' ${RESULT} | ${WC} -l` -ge 1 ] ; then
+elif [ `${ECHO} "${RESULT}" | ${GREP} -i 'shutdown' | ${WC} -l` -eq 1 ] && [ `${ECHO} "${RESULT}" | ${GREP} -i 'running' | ${WC} -l` -ge 1 ] ; then
 	echo "${RESULT}"
 	exit $WARNING
-elif [ `${GREP} -i 'running' ${RESULT} | ${WC} -l` -lt 1 ] && [ `${GREP} -i 'shutdown' ${RESULT} | ${WC} -l` -ge 1 ] ; then
+elif [ `${ECHO} "${RESULT}" | ${GREP} -i 'running' | ${WC} -l` -lt 1 ] && [ `${ECHO} "${RESULT}" | ${GREP} -i 'shutdown' | ${WC} -l` -ge 1 ] ; then
 	echo "${RESULT}"
 	exit $CRITICAL
 fi	
@@ -122,6 +122,14 @@ case "$1" in
 	    ;;
 	-C)
 	    COMMAND="-C";
+	    shift 1;
+	    ;;
+	-Q)
+	    COMMAND="-Q";
+	    shift 1;
+	    ;;
+	-Qt)
+	    COMMAND="-Qt";
 	    shift 1;
 	    ;;
         *)
