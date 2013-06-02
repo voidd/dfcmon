@@ -15,6 +15,30 @@ ECHO=/bin/echo
 WC=/usr/bin/wc
 BASEDIR=`dirname $0`
 
+# function 
+function timeToSeconds {
+        timeSeconds=0
+        # http://stackoverflow.com/questions/1406966/linux-shell-script-split-string-put-them-in-an-array-then-loop-through-them
+        timeStripped=${1//:/$' '}
+
+        multiplier=3600
+        for item in $timeStripped
+        do
+                item=${item#0}
+
+                timeSeconds=$((timeSeconds + ((item*multiplier))))
+                (( multiplier /= 60))
+        done
+}
+
+# function for comparing dates
+function compareDates {
+        if [ $cdate != $runDate ]
+        then
+                datesMatch="false"
+        fi
+}
+
 # function for boolean results
 bool_result() {
 if [ $RESULT == 0 ] ; then
@@ -24,6 +48,44 @@ elif [ ${RESULT} >= 1 ] ; then
 	$ECHO "WARNING!"
 	exit $WARNING
 fi
+}
+
+# function for check time
+systime() {
+
+rundate=$(echo ${RESULT} | awk -F" " '{ print $1 }')
+runtime=$(echo ${RESULT} | awk -F" " '{ print $2 }')
+
+
+cdate=`date '+%d.%m.%Y'`
+ctime=`date '%H:%M:%S'`
+
+datesMatch="true"
+
+compareDates
+if [ $datesMatch == "false" ]
+then
+        echo "${CRITICAL}! Dates not match!"
+        exit ${CRITICAL}
+fi
+
+timeToSeconds "$runtime"
+runSeconds=$timeSeconds
+timeToSeconds "$ctime"
+cTimeSeconds=$timeSeconds
+
+timeDiff=$((cTimeSeconds - runSeconds))
+
+if [ ${timeDiff}  == ${WARN} ] ; then
+	$ECHO "OK! Time difference is ${timeDiff} seconds!"
+	exit $OK
+elif [ ${timeDiff} >= ${WARN} ] && [ ${timeDiff} <= ${CRIT} ] ; then
+	$ECHO "WARNING! Time difference is ${timeDiff} seconds!"
+	exit $WARNING
+elif [ ${timeDiff} > ${CRIT} ] ; then
+	${ECHO} "CRITICAL! Time difference is ${timeDiff} seconds!"
+	exit $CRITICAL
+fi	
 }
 
 # function for checking Indexagent results
@@ -132,6 +194,18 @@ case "$1" in
 	    COMMAND="-Qt";
 	    shift 1;
 	    ;;
+	-f)
+	    COMMAND="-f {2}";
+	    shift 2;
+	    ;;
+	-t)
+	    COMMAND="-t";
+	    shift 1;
+	    ;;
+	-td)
+	    COMMAND="-td";
+	    shift 1;
+	    ;;
         *)
             echo "Unknown argument: $1"
             print_usage
@@ -156,8 +230,12 @@ fi
 
 # check is there result from IndexAgent
 if [ "${COMMAND}" == "-i" ] && [ $? == 0 ] ; then
-	s="${RESULT}"
 	index_agent_result
+fi
+
+# check is there result from systime
+if [ "${COMMAND}" == "-t" ] && [ $? == 0 ] ; then
+	systime
 fi
 
 if [ $? == 0 ] ; then
