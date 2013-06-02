@@ -13,6 +13,8 @@ PROG=`/bin/basename $0`
 GREP=/bin/grep
 ECHO=/bin/echo
 WC=/usr/bin/wc
+DATE=/bin/date
+AWK=/bin/awk
 BASEDIR=`dirname $0`
 
 # function 
@@ -53,12 +55,12 @@ fi
 # function for check time
 systime() {
 
-rundate=$(echo ${RESULT} | awk -F" " '{ print $1 }')
-runtime=$(echo ${RESULT} | awk -F" " '{ print $2 }')
+rundate=$(echo ${RESULT} | ${AWK} -F" " '{ print $1 }')
+runtime=$(echo ${RESULT} | ${AWK} -F" " '{ print $2 }')
 
 
-cdate=`date '+%d.%m.%Y'`
-ctime=`date '%H:%M:%S'`
+cdate=`${DATE} '+%d.%m.%Y'`
+ctime=`${DATE} '%H:%M:%S'`
 
 datesMatch="true"
 
