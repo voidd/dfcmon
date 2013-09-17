@@ -1,4 +1,4 @@
 docmon
 ======
 
-Documentum monitoring
+Documentum monitoring module for Nagios
