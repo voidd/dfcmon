@@ -8,24 +8,29 @@ repositories {
             username "developer"
             password "\\{DESede\\}gI69VzNhwdhH1spMqMvyUA=="
         }
-        url "http://217.74.43.69:8081/artifactory/repo"
+        url "http://dksu-doc-svn.ibs.ru:8081/artifactory/repo"
+    }
+    maven {
+        url "https://oss.sonatype.org/content/repositories/releases"
     }
 }
 
 dependencies {
-    compile group: 'com.emc.documentum', name: 'dfc', version: '6.7-P05'
+    compile group: 'com.emc.documentum', name: 'dfc', version: '6.7.1140.0139'
     compile group: 'com.google.guava', name: 'guava', version: '12.0'
     compile group: 'com.documentum', name: 'server-impl', version: '7.0'
+    compile group: 'net.sourceforge.htmlunit', name: 'htmlunit', version: '2.12'
     compile group: 'commons-cli', name:'commons-cli', version: '1.2'
     runtime group: 'commons-cli', name:'commons-cli', version: '1.2'
     runtime group: 'com.documentum', name: 'server-impl', version: '7.0'
-    runtime group: 'com.emc.documentum', name: 'dfc', version: '6.7-P05'
+    runtime group: 'com.emc.documentum', name: 'dfc', version: '6.7.1140.0139'
     runtime group: 'org.aspectj', name: 'aspectjrt', version: '1.6.12'
     runtime group: 'org.apache.commons', name: 'commons-lang', version: '2.4'
     runtime group: 'org.apache.log4j', name: 'log4j', version: '1.2.8'
     runtime group: 'com.rsa', name: 'certjFIPS', version: '2.2.0.0'
     runtime group: 'com.rsa', name: 'jsafeFIPS', version: '3.6'
     runtime group: 'com.google.guava', name: 'guava', version: '12.0'
+    runtime group: 'net.sourceforge.htmlunit', name: 'htmlunit', version: '2.12'
 
 }
 
@@ -37,13 +42,24 @@ jar {
     }
 }
 
+sourceSets {
+    main {
+        java {
+            srcDir 'src/java'
+        }
+        resources {
+            srcDir 'src/resources'
+        }
+    }
+}
+
 task (make, dependsOn:build, type: Sync) {
     into "build/libs"
     from configurations.runtime
 }
 
 task copyDfc(dependsOn: make, type: Copy) {
-    from 'src/main/dfc.properties'
+    from 'src/resources/dfc.properties','src/resources/log4j.properties'
     into 'build/'
 }
 
