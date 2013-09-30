@@ -22,7 +22,6 @@ dependencies {
     compile group: 'com.emc.documentum', name: 'dfc', version: '6.7.1140.0139'
     compile group: 'com.google.guava', name: 'guava', version: '12.0'
     compile group: 'com.documentum', name: 'server-impl', version: '7.0'
-    compile group: 'net.sourceforge.htmlunit', name: 'htmlunit', version: '2.12'
     compile group: 'commons-cli', name:'commons-cli', version: '1.2'
     compile group: 'org.seleniumhq.selenium', name:'selenium-java', version: '2.35.0'
     testCompile group: 'junit', name: 'junit', version: '4.+'
@@ -36,7 +35,6 @@ dependencies {
     runtime group: 'com.rsa', name: 'certjFIPS', version: '2.2.0.0'
     runtime group: 'com.rsa', name: 'jsafeFIPS', version: '3.6'
     runtime group: 'com.google.guava', name: 'guava', version: '12.0'
-    runtime group: 'net.sourceforge.htmlunit', name: 'htmlunit', version: '2.12'
 
 }
 

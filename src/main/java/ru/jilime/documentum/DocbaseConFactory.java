@@ -1,34 +1,30 @@
 package ru.jilime.documentum;
 
-import com.documentum.com.DfClientX;
-import com.documentum.com.IDfClientX;
+import com.documentum.fc.client.DfClient;
 import com.documentum.fc.client.IDfClient;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfLogger;
+import com.documentum.fc.common.DfLoginInfo;
 import com.documentum.fc.common.IDfLoginInfo;
 
 public class DocbaseConFactory {
 
-    private static String m_username = null;
-    private static String m_password = null;
-    private static String m_docbase = null;
+    private final String m_username;
+    private final String m_password;
+    private final String m_docbase;
 
-    private static IDfSession dfSession = null;
+    private static IDfSession dfSession;
 
     public DocbaseConFactory(String username, String password, String docbase) {
-        m_username=username;
-        m_password=password;
-        m_docbase=docbase;
+        this.m_username = username;
+        this.m_password = password;
+        this.m_docbase = docbase;
     }
 
     public IDfSession newSession() throws DfException {
-        IDfClientX clientx = new DfClientX();
-        IDfClient client = clientx.getLocalClient();
-        IDfLoginInfo iLogin = clientx.getLoginInfo();
-
-        iLogin.setUser(m_username);
-        iLogin.setPassword(m_password);
+        IDfClient client = new DfClient();
+        IDfLoginInfo iLogin = new DfLoginInfo(m_username,m_password);
 
         try {
             dfSession = client.newSession(m_docbase, iLogin);
@@ -47,7 +43,7 @@ public class DocbaseConFactory {
         } catch (Exception e) {
             DfLogger.error(DocbaseConFactory.class, e.getMessage(), null, null);
         }
-        DfLogger.info(DocbaseConFactory.class, "Success release session in docbase " + m_docbase, null, null);
+        DfLogger.info(DocbaseConFactory.class, "Session is succseed released from docbase " + m_docbase, null, null);
     }
 
     public IDfSession getSession() throws DfException {

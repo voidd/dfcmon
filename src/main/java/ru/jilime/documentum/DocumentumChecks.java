@@ -13,10 +13,9 @@ import java.util.List;
 
 public class DocumentumChecks {
 
-    private static String OS = System.getProperty("os.name").toLowerCase();
+    private static final String OS = System.getProperty("os.name").toLowerCase();
 
     public DocumentumChecks() {
-
     }
 
     protected Integer getSessionCount(IDfSession dfSession) throws DfException {
@@ -27,7 +26,7 @@ public class DocumentumChecks {
         int count = 0;
         IDfCollection collection = null;
         try {
-            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection = query.execute(dfSession, IDfQuery.EXEC_QUERY);
             while (collection.next()) {
                 String status = collection.getString("session_status");
                 if (status.equals("Active")) {
@@ -56,7 +55,7 @@ public class DocumentumChecks {
         query.setDQL(s);
         DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
-            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection = query.execute(dfSession, IDfQuery.EXEC_QUERY);
             while (collection.next()) {
                 result.add(new IndexAgentInfo(collection.getString("index_name").trim(),
                         collection.getString("instance_name").trim()));
@@ -81,7 +80,7 @@ public class DocumentumChecks {
         IDfCollection collection = null;
         DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
-            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection = query.execute(dfSession, IDfQuery.EXEC_QUERY);
             if (collection.next()) {
                 count = collection.getInt("cnt");
             }
@@ -106,7 +105,7 @@ public class DocumentumChecks {
         IDfCollection collection = null;
         DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
-            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection = query.execute(dfSession, IDfQuery.EXEC_QUERY);
             if (collection.next()) {
                 count = collection.getInt("cnt");
             }
@@ -131,7 +130,7 @@ public class DocumentumChecks {
         IDfCollection collection = null;
         DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
-            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection = query.execute(dfSession, IDfQuery.EXEC_QUERY);
             if (collection.next()) {
                 count = collection.getInt("cnt");
             }
@@ -155,7 +154,7 @@ public class DocumentumChecks {
         IDfCollection collection = null;
         DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
-            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection = query.execute(dfSession, IDfQuery.EXEC_QUERY);
             if (collection.next()) {
                 count = collection.getInt("cnt");
             }
@@ -178,7 +177,7 @@ public class DocumentumChecks {
         IDfCollection collection = null;
         DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
-            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection = query.execute(dfSession, IDfQuery.EXEC_QUERY);
             if (collection.next()) {
                 count = collection.getInt("cnt");
             }
@@ -203,7 +202,7 @@ public class DocumentumChecks {
         IDfCollection collection = null;
         DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
-            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection = query.execute(dfSession, IDfQuery.EXEC_QUERY);
             if (collection.next()) {
                 count = collection.getInt("cnt");
             }
@@ -227,7 +226,7 @@ public class DocumentumChecks {
         IDfCollection collection = null;
         DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
-            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection = query.execute(dfSession, IDfQuery.EXEC_QUERY);
             if (collection.next()) {
                 count = collection.getInt("cnt");
             }
@@ -250,7 +249,7 @@ public class DocumentumChecks {
         IDfCollection collection = null;
         DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
-            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection = query.execute(dfSession, IDfQuery.EXEC_QUERY);
             collection.next();
             systime = collection.getString("systime");
         } catch (DfException e) {
@@ -273,7 +272,7 @@ public class DocumentumChecks {
         IDfCollection collection = null;
         DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
-            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection = query.execute(dfSession, IDfQuery.EXEC_QUERY);
             if (collection.next()) {
                 count = collection.getInt("cnt");
             }
@@ -307,7 +306,7 @@ public class DocumentumChecks {
         IDfCollection collection = null;
         DfLogger.debug(Monitor.class, query.getDQL(), null, null);
         try {
-            collection = query.execute(dfSession, IDfQuery.DF_QUERY);
+            collection = query.execute(dfSession, IDfQuery.EXEC_QUERY);
             collection.next();
             IDfId id = collection.getId("r_object_id");
             IDfSysObject sysObject = (IDfSysObject) dfSession.getObject(id);
