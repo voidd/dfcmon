@@ -15,9 +15,6 @@ public class DocumentumChecks {
 
     private static final String OS = System.getProperty("os.name").toLowerCase();
 
-    public DocumentumChecks() {
-    }
-
     protected Integer getSessionCount(IDfSession dfSession) throws DfException {
         isConnected(dfSession);
         final String s = "EXECUTE show_sessions";
