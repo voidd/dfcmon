@@ -31,6 +31,15 @@ public class DocumentumChecks {
 
     private static final String OS = System.getProperty("os.name").toLowerCase();
 
+    private static boolean isWindows() {
+        return (OS.contains("win"));
+    }
+
+    private static boolean isUnix() {
+        return (OS.contains("nix") || OS.contains("nux") || OS.contains("sunos")
+                || OS.contains("aix") || OS.contains("HPUX"));
+    }
+
     protected Integer getSessionCount(IDfSession dfSession) throws DfException {
         checkConnection(dfSession);
         final String s = "EXECUTE show_sessions";
@@ -347,15 +356,6 @@ public class DocumentumChecks {
         File file = new File(filename);
         file.deleteOnExit();
         return file.exists();
-    }
-
-    private static boolean isWindows() {
-        return (OS.contains("win"));
-    }
-
-    private static boolean isUnix() {
-        return (OS.contains("nix") || OS.contains("nux") || OS.contains("sunos")
-                || OS.contains("aix") || OS.contains("HPUX"));
     }
 
     private boolean checkConnection(IDfSession dfSession) {

@@ -68,9 +68,9 @@ public class WebtopChecks {
             driver.wait(5000);
         }
         driver.switchTo().defaultContent();
-        long start = System.nanoTime()/1000;
+        long start = System.nanoTime() / 1000;
         driver.switchTo().frame("view").switchTo().frame("content").findElement(By.name("TasksList_ActionLink_1")).click();
-        long elapsedTimeSec = System.nanoTime()/1000 - start;
+        long elapsedTimeSec = System.nanoTime() / 1000 - start;
         synchronized (driver) {
             driver.wait(5000);
         }

@@ -75,7 +75,7 @@ public class Monitor {
                 System.out.println(checks.getTodayDocsCount(connection.getSession()));
             }
             if (line.hasOption("mi")) {
-                System.out.println(new WebtopChecks(line.getOptionValue("mi"),username,password).testManagerInbox());
+                System.out.println(new WebtopChecks(line.getOptionValue("mi"), username, password).testManagerInbox());
             }
 
         } catch (Throwable t) {

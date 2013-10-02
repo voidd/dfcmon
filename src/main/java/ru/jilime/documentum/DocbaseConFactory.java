@@ -26,11 +26,10 @@ import com.documentum.fc.common.IDfLoginInfo;
 
 public class DocbaseConFactory {
 
+    private static IDfSession dfSession;
     private final String m_username;
     private final String m_password;
     private final String m_docbase;
-
-    private static IDfSession dfSession;
 
     public DocbaseConFactory(String username, String password, String docbase) {
         this.m_username = username;
@@ -40,7 +39,7 @@ public class DocbaseConFactory {
 
     public IDfSession newSession() throws DfException {
         IDfClient client = new DfClient();
-        IDfLoginInfo iLogin = new DfLoginInfo(m_username,m_password);
+        IDfLoginInfo iLogin = new DfLoginInfo(m_username, m_password);
 
         try {
             dfSession = client.newSession(m_docbase, iLogin);
