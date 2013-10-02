@@ -1,5 +1,21 @@
 package ru.jilime.documentum;
 
+/*
+Copyright 2013 Jilime.ru
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 import com.documentum.fc.client.*;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfLogger;
@@ -16,7 +32,7 @@ public class DocumentumChecks {
     private static final String OS = System.getProperty("os.name").toLowerCase();
 
     protected Integer getSessionCount(IDfSession dfSession) throws DfException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         final String s = "EXECUTE show_sessions";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
@@ -41,7 +57,7 @@ public class DocumentumChecks {
     }
 
     protected List getIndexName(IDfSession dfSession) throws DfException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         final String s = ("select fti.index_name,iac.object_name as instance_name from dm_f" +
                 "ulltext_index fti, dm_ftindex_agent_config iac where fti.index_n" +
                 "ame =  iac.index_name and fti.is_standby = false and iac.force_i" +
@@ -69,7 +85,7 @@ public class DocumentumChecks {
     }
 
     protected Integer getDeadWorkflows(IDfSession dfSession) throws DfException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         final String s = "SELECT count(*) as cnt FROM dm_workflow w WHERE any w.r_act_state in (3,4)";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
@@ -92,7 +108,7 @@ public class DocumentumChecks {
     }
 
     protected Integer getBadWorkitems(IDfSession dfSession) throws DfException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         final String s = "select count(*) as cnt from dmi_workitem w, dm_workflow" +
                 " wf where  w.r_workflow_id = wf.r_object_id " +
                 "and a_wq_name not in (select r_object_id from dm_server_config)";
@@ -117,7 +133,7 @@ public class DocumentumChecks {
     }
 
     protected Integer getFTFailedQueueSize(IDfSession dfSession, String user) throws DfException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         final String s = "select count(*) as cnt from dmi_queue_item where name = ''{0}''" +
                 " and task_state not in (''failed'',''warning'')";
         IDfQuery query = new DfQuery();
@@ -142,7 +158,7 @@ public class DocumentumChecks {
     }
 
     protected Integer getQueueSize(IDfSession dfSession) throws DfException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         final String s = "select count(*) as cnt from dmi_queue_item " +
                 "where delete_flag=1 and date_send < date(today)-15";
         IDfQuery query = new DfQuery();
@@ -166,7 +182,7 @@ public class DocumentumChecks {
     }
 
     protected Integer getTotalQueueSize(IDfSession dfSession) throws DfException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         final String s = "select count(*) as cnt from dmi_queue_item";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
@@ -189,7 +205,7 @@ public class DocumentumChecks {
     }
 
     protected Integer getFolderItemsCount(IDfSession dfSession, String folder) throws DfException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         final String s = "select count(*) as cnt from dm_document(all)" +
                 " where folder('/%s')";
         IDfQuery query = new DfQuery();
@@ -214,7 +230,7 @@ public class DocumentumChecks {
     }
 
     protected Integer getTodayDocsCount(IDfSession dfSession) throws DfException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         final String s = "select count(*) as cnt from dm_document" +
                 " where r_creation_date >= DATE(today)";
         IDfQuery query = new DfQuery();
@@ -238,7 +254,7 @@ public class DocumentumChecks {
     }
 
     protected String getSystemTime(IDfSession dfSession) throws DfException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         final String s = "select DATE(now) as systime from dm_docbase_config enable(return_top 1)";
         IDfQuery query = new DfQuery();
         query.setDQL(s);
@@ -260,7 +276,7 @@ public class DocumentumChecks {
     }
 
     protected Boolean checkFTSearch(IDfSession dfSession) throws DfException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         final String s = "select count(r_object_id) as cnt from dm_sysobject" +
                 " SEARCH DOCUMENT CONTAINS 'test' enable(return_top 1)";
         IDfQuery query = new DfQuery();
@@ -284,7 +300,7 @@ public class DocumentumChecks {
     }
 
     protected Boolean fetchContent(IDfSession dfSession) throws DfException, IOException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         final String s = "select r_object_id from dm_document" +
                 " where folder('/System/Sysadmin/Reports') enable (RETURN_TOP 1)";
         IDfQuery query = new DfQuery();
@@ -342,12 +358,12 @@ public class DocumentumChecks {
                 || OS.contains("aix") || OS.contains("HPUX"));
     }
 
-    private boolean isConnected(IDfSession dfSession) {
+    private boolean checkConnection(IDfSession dfSession) {
         return dfSession != null;
     }
 
     protected String statusOfIA(IDfSession dfSession) throws DfException {
-        isConnected(dfSession);
+        checkConnection(dfSession);
         String ret = null;
         List list = getIndexName(dfSession);
         DfLogger.debug(Monitor.class, list.toString(), null, null);

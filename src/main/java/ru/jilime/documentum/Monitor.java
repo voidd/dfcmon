@@ -1,5 +1,21 @@
 package ru.jilime.documentum;
 
+/*
+Copyright 2013 Jilime.ru
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfLogger;
 import org.apache.commons.cli.*;
@@ -10,6 +26,9 @@ import java.io.PrintWriter;
 public class Monitor {
 
     private static DocumentumChecks checks = new DocumentumChecks();
+    private static String username = null;
+    private static String password = null;
+    private static String docbase = null;
 
     public static void main(String[] args) throws DfException {
         Options options = construct();
@@ -20,16 +39,16 @@ public class Monitor {
             CommandLine line = parser.parse(options, args);
 
             if (line.hasOption("S")) {
-                System.out.println(checks.getSessionCount(connection.getSession()).toString());
+                System.out.println(checks.getSessionCount(connection.getSession()));
             }
             if (line.hasOption("i")) {
                 System.out.println(checks.statusOfIA(connection.getSession()));
             }
             if (line.hasOption("W")) {
-                System.out.println(checks.getDeadWorkflows(connection.getSession()).toString());
+                System.out.println(checks.getDeadWorkflows(connection.getSession()));
             }
             if (line.hasOption("b")) {
-                System.out.println(checks.getBadWorkitems(connection.getSession()).toString());
+                System.out.println(checks.getBadWorkitems(connection.getSession()));
             }
             if (line.hasOption("F")) {
                 if (checks.checkFTSearch(connection.getSession())) System.out.print(0);
@@ -38,29 +57,34 @@ public class Monitor {
                 if (checks.fetchContent(connection.getSession())) System.out.print(0);
             }
             if (line.hasOption("q")) {
-                System.out.println(checks.getFTFailedQueueSize(connection.getSession(), line.getOptionValue("q")).toString());
+                System.out.println(checks.getFTFailedQueueSize(connection.getSession(), line.getOptionValue("q")));
             }
             if (line.hasOption("Q")) {
-                System.out.println(checks.getQueueSize(connection.getSession()).toString());
+                System.out.println(checks.getQueueSize(connection.getSession()));
             }
             if (line.hasOption("Qt")) {
-                System.out.println(checks.getTotalQueueSize(connection.getSession()).toString());
+                System.out.println(checks.getTotalQueueSize(connection.getSession()));
             }
             if (line.hasOption("f")) {
-                System.out.println(checks.getFolderItemsCount(connection.getSession(), line.getOptionValue("f")).toString());
+                System.out.println(checks.getFolderItemsCount(connection.getSession(), line.getOptionValue("f")));
             }
             if (line.hasOption("t")) {
                 System.out.println(checks.getSystemTime(connection.getSession()));
             }
             if (line.hasOption("td")) {
-                System.out.println(checks.getTodayDocsCount(connection.getSession()).toString());
+                System.out.println(checks.getTodayDocsCount(connection.getSession()));
+            }
+            if (line.hasOption("mi")) {
+                System.out.println(new WebtopChecks(line.getOptionValue("mi"),username,password).testManagerInbox());
             }
 
         } catch (Throwable t) {
             DfLogger.fatal(connection.getSession(), t.getMessage(), null, t);
             DfLogger.error(Monitor.class, "Exception while parsing ", null, t);
         } finally {
-            connection.releaseConnection();
+            if (connection.getSession() != null) {
+                connection.releaseConnection();
+            }
         }
     }
 
@@ -81,6 +105,7 @@ public class Monitor {
         options.addOption("f", "folder", true, "get items count in particular folder");
         options.addOption("t", "systime", false, "show current docbase time");
         options.addOption("td", "todaydocs", false, "show all documents created today");
+        options.addOption("mi", "managerinbox", true, "");
 
         return options;
     }
@@ -88,9 +113,6 @@ public class Monitor {
     private static DocbaseConFactory initial(String[] args, Options options) throws DfException {
         CommandLineParser parser = new BasicParser();
         DocbaseConFactory conFactory = null;
-        String username = null;
-        String password = null;
-        String docbase = null;
         if (args.length < 1) {
             System.out.println("Class usage info:");
             printUsage(options, System.out);
