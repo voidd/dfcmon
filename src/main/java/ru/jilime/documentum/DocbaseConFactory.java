@@ -55,6 +55,7 @@ public class DocbaseConFactory {
     public void releaseConnection() throws DfException {
         try {
             dfSession.getSessionManager().release(dfSession);
+            dfSession.getSessionManager().clearIdentities();
         } catch (Exception e) {
             DfLogger.error(DocbaseConFactory.class, e.getMessage(), null, null);
         }
