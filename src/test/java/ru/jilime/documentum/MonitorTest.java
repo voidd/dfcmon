@@ -30,7 +30,7 @@ public class MonitorTest {
 
         driver = new InternetExplorerDriver();
         //driver = new HtmlUnitDriver(capabilities);
-        baseUrl = "http://172.28.130.101:7003/sad";
+        baseUrl = "";
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
     }
 
@@ -38,15 +38,17 @@ public class MonitorTest {
     public void testSad() throws Exception {
         driver.get(baseUrl);
         driver.findElement(By.id("LoginUsername")).clear();
-        driver.findElement(By.id("LoginUsername")).sendKeys("AASaltykov");
+        driver.findElement(By.id("LoginUsername")).sendKeys("User");
         driver.findElement(By.id("LoginPassword")).clear();
         driver.findElement(By.id("LoginPassword")).sendKeys("111");
         Select select = new Select(driver.findElement(By.id("DocbaseName")));
-        select.selectByVisibleText("MC");
+        select.selectByVisibleText("REPO");
         driver.findElement(By.name("Login_loginButton_0")).click();
-        while (!driver.findElement(By.name("view")).isDisplayed()) {
-            driver.manage().wait();
+        synchronized (driver) {
+            driver.wait(10000);
         }
+        //((JavascriptExecutor) driver).executeScript("safeCall(postServerEvent2,\"Login_0\",null,\"Login_loginButton_0\",\"Login_0\",\"onLogin\");");
+        //System.out.println(driver.getPageSource());
         //System.out.println(driver.getPageSource());
         driver.switchTo().frame("view").switchTo().frame("tabbar");
         ((JavascriptExecutor) driver).executeScript("var value='inboxstreamline';document.TabBar_0.TabBar_tabView_hidden_0.value=value;storeScrollPosition('TabBar_0', '__dmfHiddenX', '__dmfHiddenY');safeCall(postServerEvent,\"TabBar_0\", \"TabBar_inboxstreamline_0\",\"TabBar_0\",\"onTabClick\");");
