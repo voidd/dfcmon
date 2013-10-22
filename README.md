@@ -1,4 +1,4 @@
-docmon
+dfcmon
 ======
 
-Documentum monitoring module for Nagios
+Documentum DFC monitoring for Nagios
