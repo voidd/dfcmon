@@ -4,13 +4,6 @@ apply plugin: 'maven'
 repositories {
     mavenCentral()
     maven {
-        credentials {
-            username "developer"
-            password "\\{DESede\\}gI69VzNhwdhH1spMqMvyUA=="
-        }
-        url "http://dksu-doc-svn.ibs.ru:8081/artifactory/repo"
-    }
-    maven {
         url "https://oss.sonatype.org/content/repositories/releases"
     }
     maven {
