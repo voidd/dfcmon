@@ -12,7 +12,7 @@ import org.openqa.selenium.support.ui.Select;
 
 import java.util.concurrent.TimeUnit;
 
-public class MonitorTest {
+public class WebtopTest {
     private WebDriver driver;
     private String baseUrl;
 
@@ -28,7 +28,7 @@ public class MonitorTest {
         capabilities.setBrowserName("internet explorer");
         capabilities.setVersion("8");
 
-        driver = new InternetExplorerDriver();
+        driver = new InternetExplorerDriver(capabilities);
         //driver = new HtmlUnitDriver(capabilities);
         baseUrl = "";
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
@@ -38,11 +38,11 @@ public class MonitorTest {
     public void testSad() throws Exception {
         driver.get(baseUrl);
         driver.findElement(By.id("LoginUsername")).clear();
-        driver.findElement(By.id("LoginUsername")).sendKeys("User");
+        driver.findElement(By.id("LoginUsername")).sendKeys("");
         driver.findElement(By.id("LoginPassword")).clear();
-        driver.findElement(By.id("LoginPassword")).sendKeys("111");
+        driver.findElement(By.id("LoginPassword")).sendKeys("");
         Select select = new Select(driver.findElement(By.id("DocbaseName")));
-        select.selectByVisibleText("REPO");
+        select.selectByVisibleText("");
         driver.findElement(By.name("Login_loginButton_0")).click();
         synchronized (driver) {
             driver.wait(10000);
