@@ -39,12 +39,12 @@ public class WebtopChecks {
         baseUrl = url;
     }
 
-    public void setUp() throws Exception {
+    public void prepareDriver() throws Exception {
         Properties properties = new Properties();
         try {
             properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("check.propetires"));
         } catch (IOException e) {
-            throw new IOException("Can not get RDBMS connection parameters. Check file: check.propetires", e);
+            throw new IOException("Can not get Selenium Webdriver path parameters. Check file: check.propetires", e);
         }
         System.setProperty("webdriver.ie.driver", properties.getProperty("webdriver.path"));
         DesiredCapabilities capabilities = DesiredCapabilities.htmlUnit();
@@ -58,7 +58,7 @@ public class WebtopChecks {
     }
 
     public long testManagerInbox() throws Exception {
-        setUp();
+        prepareDriver();
         driver.get(baseUrl);
         driver.findElement(By.id("LoginUsername")).clear();
         driver.findElement(By.id("LoginUsername")).sendKeys(m_user);
@@ -83,11 +83,11 @@ public class WebtopChecks {
             driver.wait(5000);
         }
         driver.switchTo().defaultContent().switchTo().frame("titlebar").findElement(By.name("TitleBar_logout_0")).click();
-        tearDown();
+        releaseDriver();
         return TimeUnit.SECONDS.convert(elapsedTimeSec, TimeUnit.NANOSECONDS);
     }
 
-    public void tearDown() throws Exception {
+    public void releaseDriver() throws Exception {
         driver.quit();
     }
 }
