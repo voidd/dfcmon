@@ -23,6 +23,8 @@ import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.Select;
 
+import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class WebtopChecks {
@@ -38,7 +40,13 @@ public class WebtopChecks {
     }
 
     public void setUp() throws Exception {
-        System.setProperty("webdriver.ie.driver", "D:\\develop\\gnuwin32\\bin\\IEDriverServer.exe");
+        Properties properties = new Properties();
+        try {
+            properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("check.propetires"));
+        } catch (IOException e) {
+            throw new IOException("Can not get RDBMS connection parameters. Check file: check.propetires", e);
+        }
+        System.setProperty("webdriver.ie.driver", properties.getProperty("webdriver.path"));
         DesiredCapabilities capabilities = DesiredCapabilities.htmlUnit();
         capabilities.setJavascriptEnabled(true);
         capabilities.setBrowserName("internet explorer");
@@ -57,7 +65,7 @@ public class WebtopChecks {
         driver.findElement(By.id("LoginPassword")).clear();
         driver.findElement(By.id("LoginPassword")).sendKeys(m_password);
         Select select = new Select(driver.findElement(By.id("DocbaseName")));
-        select.selectByVisibleText("MC");
+        select.selectByVisibleText("");
         driver.findElement(By.name("Login_loginButton_0")).click();
         synchronized (driver) {
             driver.wait(5000);
